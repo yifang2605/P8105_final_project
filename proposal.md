@@ -1,7 +1,7 @@
 Project proposal
 ================
 
-# Project Title
+# Project Tentative Title
 
 **Members: Fei Xiao(fx2184), Kelly Luo(sl5012), Tongtong Zhu(tz2520), Yi
 Fang(yf2605), Yujie Huang(yh3429)**
