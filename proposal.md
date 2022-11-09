@@ -3,7 +3,8 @@ Project proposal
 
 # Project Title
 
-**The group members (names and UNIs): Yi Fang(yf2605),**
+**Members: Fei Xiao(fx2184), Kelly Luo(), Yi Fang(yf2605), Yujie
+Huang(yh3429)**
 
 ## Motivation
 
