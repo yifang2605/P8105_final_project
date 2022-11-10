@@ -3,7 +3,7 @@ title: "Project proposal"
 output: github_document
 ---
 
-# Project Tentative Title: Mental health risk factor
+# Project Tentative Title: Mental Health Post Covid Pandemic 
 **Members: Fei Xiao(fx2184), Kelly Luo(sl5012), Tongtong Zhu(tz2520), Yi Fang(yf2605), Yujie Huang(yh3429)** 
 
 ## Motivation
@@ -19,3 +19,9 @@ output: github_document
 Quiz format with answers.
 
 ## planned timeline
+- Nov 13-Nov 25:Data preparation and exploratory analysis
+- Nov 26: Decide final visualization and tables
+- Nov 27-Dec 3: Project description and video 
+- Dec 3-Dec 9: Web pages and adjustment
+- Dec10: Final check, Submission and Peer assessment
+
