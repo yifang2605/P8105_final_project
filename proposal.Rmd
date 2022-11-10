@@ -3,15 +3,19 @@ title: "Project proposal"
 output: github_document
 ---
 
-# Project Tentative Title
+# Project Tentative Title: Mental health risk factor
 **Members: Fei Xiao(fx2184), Kelly Luo(sl5012), Tongtong Zhu(tz2520), Yi Fang(yf2605), Yujie Huang(yh3429)** 
 
 ## Motivation
 
+
 ## Intended final products
+
 
 ## anticipated data sources
 
+
 ## planned analyses / visualizations / coding challenges
+Quiz format with answers.
 
 ## planned timeline
