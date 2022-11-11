@@ -55,7 +55,18 @@ family, medication status for anxious feelings, etc.
 
 ## planned analyses / visualizations / coding challenges
 
-Quiz format with answers.
+-   Quiz format liked to answer pages with data and visualization to
+    justify the answers and additional resources.
+
+-   Investigating variables that have significant effects on mental
+    health, such as income, number of people living with, number of
+    pets.
+
+-   Descriptive and inferential statistical analyses for mental health
+    and potential related factors.
+
+-   Visualizations to show how different risk factors’ effect on
+    different mental health problems changes before and after pandemic.
 
 ## planned timeline
 
