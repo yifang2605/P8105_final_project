@@ -19,6 +19,11 @@ The final product will be a website that includes data summaries, visualizations
 
 
 ## anticipated data sources
+https://www.cdc.gov/nchs/nhis/2020nhis.htm 
+The National Health Interview Survey (NHIS) is the principal source of information on the health of the civilian noninstitutionalized population of the United States and is one of the major data collection programs of the National Center for Health Statistics (NCHS) which is part of the Centers for Disease Control and Prevention (CDC). Mental health data can be readily available through the CDC official website. These data span from 2004 to 2019 and include descriptive information related to mental health status, and people social behaviors during pandemic and so on. These data are at the individual level.
+
+https://healthsurveys.ipums.org
+Data nhis_0002.dat was downloaded from IPUMS Health Surveys, which provide free individual-level survey data for research purposes from two leading sources of self-reported health and health care access information: the National Health Interview Survey (NHIS) and the Medical Expenditure Panel Survey (MEPS). For now, our data contains anxiety level and other SES information from 2018 to 2021, and includs individuals’ age, sex , education level, number of person in family, medication status for anxious feelings, etc. 
 
 
 ## planned analyses / visualizations / coding challenges
