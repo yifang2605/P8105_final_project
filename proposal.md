@@ -23,6 +23,14 @@ person becoming seriously ill after contracting COVID-19.
 
 ## Intended final products
 
+The final product will be a website that includes data summaries,
+visualizations, a screencast, written report and corresponding github
+repository containing all relevant program files and outputs related to
+the project. The website is open for public audiences and aims to engage
+with the public, especially for people who are suffering from or
+interested in mental health problems. Also, we expect our website could
+help people maintain mental health and wellness.
+
 ## anticipated data sources
 
 ## planned analyses / visualizations / coding challenges
