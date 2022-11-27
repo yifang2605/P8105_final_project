@@ -1,0 +1,34 @@
+Type	Variable	Label
+H	YEAR	Survey year
+H	SERIAL	Sequential Serial Number, Household Record
+H	STRATA	Stratum for variance estimation
+H	PSU	Primary sampling unit (PSU) for variance estimation
+H	NHISHID	NHIS Unique identifier, household
+H	HHWEIGHT	Household weight, final annual
+P	PERNUM	Person number within family/household (from reformatting)
+P	NHISPID	NHIS Unique Identifier, person
+P	HHX	Household number (from NHIS)
+P	FMX	Family number (from NHIS)
+P	PX	Person number of respondent (from NHIS).
+P	PERWEIGHT	Final basic annual weight
+P	SAMPWEIGHT	Sample Person Weight
+P	LONGWEIGHT	Sample adult weight, longitudinal sample
+P	PARTWEIGHT	Sample adult weight, partial sample
+P	FWEIGHT	Final annual family weight
+P	SUPP1WT	Supplemental Person Weight 1
+P	ASTATFLG	Sample adult flag
+P	CSTATFLG	Sample child flag
+P	AGE	Age
+P	SEX	Sex
+P	MARST	Current marital status
+P	POVERTY	Ratio of family income to poverty threshold
+P	WORFREQ	How often feel worried, nervous, or anxious
+P	WORRX	Take medication for worried, nervous, or anxious feeings
+P	WORFEELEVL	Level of worried, nervous, or anxious feelings, last time
+P	DEPFREQ	How often feel depressed
+P	DEPRX	Take medication for depression
+P	DEPFEELEVL	Level of depression, last time depressed
+P	CVDDIAG	Ever told had or likely had coronavirus/COVID-19
+P	CVDTEST	Ever been tested for coronavirus/COVID-19
+P	CVDTESTRSLT	Had coronavirus/COVID-19, according to test
+P	CVDSYMP	Severity of coronavirus/COVID-19 symptoms at their worst
