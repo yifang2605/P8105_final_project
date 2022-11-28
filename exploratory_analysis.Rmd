@@ -7,6 +7,8 @@ output: html_document
 library(tidyverse)
 library(viridis)
 library(plotly)
+library(mgcv)
+library(modelr)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -32,12 +34,32 @@ theme_set(
 ```
 
 
-read data
+data cleaning
 
 ```{r}
 nhis = 
   read_csv("data/nhis_data01.csv") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  mutate(
+    worrx = recode_factor(worrx,'1' = "no", '2' = "yes"),
+    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little")
+  )
+
+recent_yr_df = 
+  nhis %>% 
+  filter(year>2019)
 ```
 
 
@@ -45,13 +67,8 @@ nhis =
 number of people reported taken medication for worried, nervous, or anxious feeings from 2015 to 2021.
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    worrx %in% c(1,2)
-  ) %>% 
-  mutate(
-    worrx = recode_factor(worrx, '1' = "no", '2' = "yes")
-  ) %>%
+  filter(year>=2015) %>%
+  drop_na(worrx) %>% 
   group_by(year, worrx) %>% 
   summarize(wor_num = n()) %>% 
   pivot_wider(
@@ -79,15 +96,8 @@ nhis %>%
 Frequency of worries
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    worfreq > 0, worfreq < 7
-  ) %>%
-  mutate(
-    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never")
-  ) %>% 
+  filter(year>=2015) %>% 
+  drop_na(worfreq) %>% 
   group_by(year, worfreq) %>% 
   summarize(count = n()) %>% 
   group_by(year) %>% 
@@ -109,7 +119,6 @@ nhis %>%
     text = ~text_label
   ) %>% 
   layout(
-    title = "Distribution of frequency of worries",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"), 
     barmode = 'stack',
@@ -120,15 +129,8 @@ nhis %>%
 worry level distribution.
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    worfeelevl > 0, worfeelevl < 7
-  ) %>%
-  mutate(
-    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-  ) %>% 
+  filter(year>=2015) %>%
+  drop_na(worfeelevl) %>% 
   group_by(year, worfeelevl) %>% 
   summarize(count = n()) %>% 
   group_by(year) %>% 
@@ -158,17 +160,32 @@ nhis %>%
   )
 ```
 
+logistic regression
+
+whether taken medication for worried, nervous, or anxious feelings is associated with covid-19 adjusting for sex and family income level.
+
+```{r}
+glm(worrx ~ sex + poverty + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = recent_yr_df) %>% 
+    broom::tidy(conf.int = TRUE) %>% 
+    mutate(
+      odds_ratio = exp(estimate),
+      low = exp(conf.low),
+      high = exp(conf.high)
+    ) %>% 
+    select(term, odds_ratio, low, high) %>% 
+  knitr::kable(digits=2)
+
+```
+
+
 ## Depression
 number of people reported taken medication for depression from 2015 to 2021.
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    deprx %in% c(1,2)
-  ) %>% 
-  mutate(
-    deprx = recode_factor(deprx, '1' = "no", '2' = "yes")
-  ) %>%
+  filter(year>=2015) %>% 
+  drop_na(deprx) %>%
   group_by(year, deprx) %>% 
   summarize(dep_num = n()) %>% 
   pivot_wider(
@@ -196,15 +213,8 @@ nhis %>%
 Frequency of feel depressed
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    depfreq > 0, depfreq < 7
-  ) %>%
-  mutate(
-    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never")
-  ) %>% 
+  filter(year>=2015) %>%
+  drop_na(depfreq) %>% 
   group_by(year, depfreq) %>% 
   summarize(count = n()) %>% 
   group_by(year) %>% 
@@ -237,25 +247,14 @@ nhis %>%
 depression level distribution.
 ```{r}
 nhis %>% 
-  filter(
-    year>=2015,
-    depfeelevl > 0, depfeelevl < 7
-  ) %>%
-  mutate(
-    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-  ) %>% 
+  filter(year>=2015) %>%
+  drop_na(depfeelevl) %>% 
   group_by(year, depfeelevl) %>% 
   summarize(count = n()) %>% 
   group_by(year) %>% 
-  summarize(
-     percentage=100 * count/sum(count),
-     sum_count = sum(count),
-     depfeelevl = depfeelevl,
-     count=count
-  ) %>% 
   mutate(
+    percentage = 100 * count/sum(count),
+    sum_count = sum(count),
     text_label = str_c(count, " out of ", sum_count)
   ) %>% 
   plot_ly(
@@ -274,3 +273,24 @@ nhis %>%
     legend = list(orientation = 'h')
   )
 ```
+
+logistic regression
+
+whether taken medication for depression is associated with covid-19 adjusting for sex and family income level.
+
+```{r}
+
+glm(deprx ~ sex + poverty + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = recent_yr_df) %>% 
+    broom::tidy(conf.int = TRUE) %>% 
+    mutate(
+      odds_ratio = exp(estimate),
+      low = exp(conf.low),
+      high = exp(conf.high)
+    ) %>% 
+    select(term, odds_ratio, low, high) %>% 
+  knitr::kable(digits=2)
+
+```
+
