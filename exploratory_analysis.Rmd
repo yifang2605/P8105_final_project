@@ -6,6 +6,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(viridis)
+library(plotly)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -46,22 +47,33 @@ number of people reported taken medication for worried, nervous, or anxious feei
 nhis %>% 
   filter(
     year>=2015,
-    worrx == 2
+    worrx %in% c(1,2)
   ) %>% 
-  group_by(year) %>% 
+  mutate(
+    worrx = recode_factor(worrx, '1' = "no", '2' = "yes")
+  ) %>%
+  group_by(year, worrx) %>% 
   summarize(wor_num = n()) %>% 
-  ggplot(aes(x=year, y=wor_num))+
-  geom_col()+
-  scale_x_continuous(breaks = seq(2015, 2021, by = 1))+
-  labs(
-    title = "Number of people reporting taking medication for worry, stress or anxiety each year",
-    x = "Year",
-    y = "Number of people",
-  )+
-  theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-  )
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label) %>% 
+  layout(title = "Percentage of people reported taken medication for worried, nervous, or anxious feeings each year",
+         xaxis = list (title = ""),
+         yaxis = list (title = "Percentage")
+         ) %>% 
+  hide_colorbar()
 ```
 
 Frequency of worries
@@ -78,17 +90,31 @@ nhis %>%
                             '5' = "Never")
   ) %>% 
   group_by(year, worfreq) %>% 
-  summarize(count = n()) %>% 
-  ggplot(aes(fill=worfreq, x=year, y=count))+
-  geom_bar(position="fill", stat="identity")+
-  scale_x_continuous(breaks = seq(2015, 2021, by = 1))+
-  labs(
-    title = "Distribution of frequency of worries",
-    x = "Year",
-    y="Percentage",
-    fill = "Frequency"
-  )+
-  theme(panel.grid = element_blank())
+  summarize(
+    count = n()
+    ) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfreq = worfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label) %>% 
+  layout(title = "Distribution of frequency of worries",
+         xaxis = list (title = ""),
+         yaxis = list (title = "Percentage"), 
+         barmode = 'stack',
+         legend = list(orientation = 'h'))
 ```
 
 worry level distribution.
