@@ -89,13 +89,7 @@ nhis %>%
                             '5' = "Never")
   ) %>% 
   group_by(year, worfreq) %>% 
-<<<<<<< HEAD
   summarize(count = n()) %>% 
-=======
-  summarize(
-    count = n()
-    ) %>% 
->>>>>>> 474823a576b3dfe6a6944ea68c33737e6e373122
   group_by(year) %>% 
   summarize(
      percentage=100 * count/sum(count),
@@ -112,7 +106,6 @@ nhis %>%
     color = ~worfreq,
     type = "bar", 
     colors = "viridis",
-<<<<<<< HEAD
     text = ~text_label
   ) %>% 
   layout(
@@ -122,14 +115,6 @@ nhis %>%
     barmode = 'stack',
     legend = list(orientation = 'h')
   )
-=======
-    text = ~text_label) %>% 
-  layout(title = "Distribution of frequency of worries",
-         xaxis = list (title = ""),
-         yaxis = list (title = "Percentage"), 
-         barmode = 'stack',
-         legend = list(orientation = 'h'))
->>>>>>> 474823a576b3dfe6a6944ea68c33737e6e373122
 ```
 
 worry level distribution.
@@ -172,3 +157,4 @@ nhis %>%
     legend = list(orientation = 'h')
   )
 ```
+
