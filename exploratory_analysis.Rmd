@@ -158,3 +158,119 @@ nhis %>%
   )
 ```
 
+## Depression
+number of people reported taken medication for depression from 2015 to 2021.
+```{r}
+nhis %>% 
+  filter(
+    year>=2015,
+    deprx %in% c(1,2)
+  ) %>% 
+  mutate(
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes")
+  ) %>%
+  group_by(year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label) %>% 
+  layout(title = "Percentage of people reported taken medication for depression each year",
+         xaxis = list (title = ""),
+         yaxis = list (title = "Percentage")
+         ) %>% 
+  hide_colorbar()
+```
+
+Frequency of feel depressed
+```{r}
+nhis %>% 
+  filter(
+    year>=2015,
+    depfreq > 0, depfreq < 7
+  ) %>%
+  mutate(
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never")
+  ) %>% 
+  group_by(year, depfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfreq = depfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Distribution of frequency of feel depressed",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+depression level distribution.
+```{r}
+nhis %>% 
+  filter(
+    year>=2015,
+    depfeelevl > 0, depfeelevl < 7
+  ) %>%
+  mutate(
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little")
+  ) %>% 
+  group_by(year, depfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfeelevl = depfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Distribution of depression levels",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
