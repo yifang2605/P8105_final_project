@@ -59,7 +59,28 @@ mental_df =
 
 ```
 
+### Map: Percent of adults reporting any mental illness  by state between 2019-2020
 
+```{r} 
+state_mental=
+  plot_usmap(
+    data = mental_df,
+    regions = "state",
+    values = "any_mental_per", 
+    labels = TRUE, label_color = "white") +
+  labs(
+    title = "Percent of adults reporting any mental illness for each state, 2019-2022"
+  ) +
+  scale_fill_continuous(
+    name = "Mental illness percent (%)",
+    label = scales::comma) +
+  theme(legend.position = "right")
+
+ggplotly(state_mental)
+  
+```
+
+According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
 
 
 ## Depression and anxiety
