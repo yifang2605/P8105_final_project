@@ -123,6 +123,51 @@ grid.arrange(any_mental_plot, ser_mental_plot, ncol =2)
 Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
 
 
+### Any/Serious Mental illness percent, Top 10 states, 2019-2020
+
+```{r}
+any_top10_plot =
+  mental_df %>% 
+    filter(row_number(desc(any_mental_per)) <= 10) %>% 
+    mutate(
+      state = fct_reorder(state, any_mental_per)
+    ) %>% 
+    ggplot(
+      aes(x = any_mental_per, y = state, fill = state)) +
+      geom_bar(stat = "identity") +
+      labs(
+        title = "Any Mental Illness Percent, Top 10 States",
+        x = "Any Mental illness percent (%)",
+        y = "State",
+        fill = "State") +
+    theme(legend.position = "bottom")
+
+ser_top10_plot =
+  mental_df %>% 
+    filter(row_number(desc(ser_mental_per)) <= 10) %>% 
+    mutate(
+      state = fct_reorder(state, ser_mental_per)
+    ) %>% 
+    ggplot(
+      aes(x = ser_mental_per, y = state, fill = state)) +
+      geom_bar(stat = "identity") +
+      labs(
+        title = "Serious Mental Illness Percent, Top 10 States",
+        x = "Serious mental illness percent (%)",
+        y = "State",
+      fill = "State") +
+    theme(legend.position = "bottom")
+
+grid.arrange(any_top10_plot, ser_top10_plot, ncol =2) 
+
+```
+
+**Comment**
+
+The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
+
+
+
 
 
 
