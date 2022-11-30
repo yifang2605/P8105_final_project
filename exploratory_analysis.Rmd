@@ -10,6 +10,11 @@ library(plotly)
 library(mgcv)
 library(modelr)
 
+library(usmap)
+library(gridExtra)
+library(dplyr)
+library(readxl)
+
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
@@ -33,7 +38,31 @@ theme_set(
 )
 ```
 
+## Mental Illness
 
+### Load and clean data 
+
+```{r}
+mental_df = 
+  read_csv("./data/mental_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    any_mental_num = any_mental_num / 1000000,
+    any_mental_per = any_mental_per * 100,
+    ser_mental_num = ser_mental_num / 1000000,
+    ser_mental_per = ser_mental_per * 100,
+    state_abb = state.abb[match(state, state.name)],
+    region = state.region[match(state, state.name)]
+  ) %>% 
+  mutate(
+    state_abb = replace(state_abb, state == "District of Columbia", "DC"))
+
+```
+
+
+
+
+## Depression and anxiety
 data cleaning
 
 ```{r}
