@@ -82,6 +82,51 @@ ggplotly(state_mental)
 
 According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
 
+### Any/Serious Mental illness numbers (million), by region, 2019-2020
+
+```{r}
+any_mental_plot = 
+  mental_df %>% 
+    group_by(region) %>%
+    drop_na() %>% 
+    summarize(any_mental_num = sum(any_mental_num)) %>% 
+    ggplot(
+      aes(x = region, y = any_mental_num, fill = region)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Any Mental Illness Number, by Region, 2019-2020",
+      x = "Region",
+      y = "Mental illness number (million)",
+      fill = "Region") +
+  theme(legend.position = "bottom")
+
+ser_mental_plot =
+  mental_df %>% 
+    group_by(region) %>%
+    drop_na() %>% 
+    summarize(ser_mental_num = sum(ser_mental_num)) %>% 
+    ggplot(
+      aes(x = region, y = ser_mental_num, fill = region)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Serious Mental Illness Number, by Region, 2019-2020",
+      x = "Region",
+      y = "Mental illness number (million)",
+      fill = "Region") +
+    theme(legend.position = "bottom")
+
+grid.arrange(any_mental_plot, ser_mental_plot, ncol =2) 
+  
+```
+
+**Comment**
+Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
+
+
+
+
+
+
 
 ## Depression and anxiety
 data cleaning
