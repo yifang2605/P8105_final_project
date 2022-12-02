@@ -465,6 +465,19 @@ suicide_df %>%
 
 Comment: The peak suicide death number was about 48500 per 100K in 2018.
 
+### suicide death rate for each state, 2014-2020
+
+```{r}
+suicide_df %>% 
+  ggplot(aes(x = state, y = death_rate, color = year)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Suicide Death Rate for Each State, 2014-2020",
+    x = "State",
+    y = "Suicide death rate per 100K") 
+ 
+```
 
 
 
