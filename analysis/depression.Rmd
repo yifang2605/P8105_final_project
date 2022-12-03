@@ -1,0 +1,152 @@
+---
+title: "Depression"
+output: html_document
+---
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+## Data Source
+
+IPUMS Health Surveys: NHIS is a harmonized set of data covering more than 50 years (1963-present) of the National Health Interview Survey (NHIS). The NHIS is the principal source of information on the health of the U.S. population, covering such topics as general health status, the distribution of acute and chronic illness, functional limitations, access to and use of medical services, insurance coverage, and health behaviors. On average, the survey covers 100,000 persons in 45,000 households each year. The IPUMS NHIS facilitates cross-time comparisons of these invaluable survey data by coding variables identically across time. Our analysis will use data from 2015 to 2021, which covers the COVID-19 period.
+
+
+```{r}
+nhis = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    worrx = recode_factor(worrx,'1' = "no", '2' = "yes"),
+    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little")
+  )
+```
+
+## Depression
+number of people reported taken medication for depression from 2015 to 2021.
+```{r}
+nhis %>% 
+  filter(year>=2015) %>% 
+  drop_na(deprx) %>%
+  group_by(year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label) %>% 
+  layout(title = "Percentage of people reported taken medication for depression each year",
+         xaxis = list (title = ""),
+         yaxis = list (title = "Percentage")
+         ) %>% 
+  hide_colorbar()
+```
+
+Frequency of feel depressed
+```{r}
+nhis %>% 
+  filter(year>=2015) %>%
+  drop_na(depfreq) %>% 
+  group_by(year, depfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfreq = depfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Distribution of frequency of feel depressed",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+depression level distribution.
+```{r}
+nhis %>% 
+  filter(year>=2015) %>%
+  drop_na(depfeelevl) %>% 
+  group_by(year, depfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  mutate(
+    percentage = 100 * count/sum(count),
+    sum_count = sum(count),
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Distribution of depression levels",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
