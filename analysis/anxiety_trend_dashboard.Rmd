@@ -72,10 +72,13 @@ anxiety =
   filter_at(vars(worrx, worfreq, worfeelevl), any_vars(!is.na(.)))
 ```
 
-Column {data-width=300}
+Percentage of Anxiety
+=====================================
+
+Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Percentage of people reported taken medication for worried, nervous, or anxious feelings
+### Percentage of people reported taken medication for anxiety
 ```{r}
 anxiety %>%
   drop_na(worrx) %>% 
@@ -105,7 +108,11 @@ anxiety %>%
   ) %>% 
   hide_colorbar()
 ```
-### Stratify by Biological sex
+
+Column {.tabset}
+-------------------------------------
+
+### By Biological sex
 ```{r}
 anxiety %>%
   drop_na(sex, worrx) %>% 
@@ -143,10 +150,7 @@ anxiety %>%
 
 ```
 
-Column {data-width=300}
------------------------------------------------------------------------
-
-### Stratify by ratio of household income to the poverty line
+### By household income to the poverty line ratio
 ```{r}
 anxiety %>%
   drop_na(poverty, worrx) %>% 
@@ -178,7 +182,7 @@ anxiety %>%
   
 ```
 
-### Stratify by martial status 
+### By martial status 
 ```{r}
 anxiety %>%
   drop_na(marst, worrx) %>% 
@@ -211,10 +215,13 @@ anxiety %>%
 
 
 
-Column {data-width=300}
+Level and Frequency of Anxiety {data-orientation=columns}
+=====================================     
+   
+Column {data-width=500}
 -----------------------------------------------------------------------
 
-### Level of worried, nervous, or anxious feelings
+### Level of anxiety
 
 ```{r,echo = FALSE, message=FALSE}
 anxiety %>%
@@ -247,7 +254,10 @@ anxiety %>%
   )
 ```
 
-### Frequency of worried, nervous, or anxious feelings
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Frequency of anxiety
 
 ```{r,echo = FALSE, message=FALSE}
 anxiety %>% 
