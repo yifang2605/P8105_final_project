@@ -1,0 +1,291 @@
+---
+title: "Anxiety Trend Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source: embed
+    theme: sandstone
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(viridis)
+library(plotly)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+```{r}
+anxiety = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year>=2015) %>% 
+  select(year, worrx, worfreq, worfeelevl, age, sex, marst, poverty) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marst = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married", "12" = "Married", "13" = "Married",
+                        "20" = "Widowed",
+                        "30" = "Divorced",
+                        "40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    worrx = recode_factor(worrx,
+                          '1' = "no", 
+                          '2' = "yes"),
+    worfreq = recode_factor(worfreq, 
+                            '1' = "Daily", 
+                            '2' = "Weekly", 
+                            '3' = "Monthly", 
+                            '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, 
+                               '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little")
+    ) %>% 
+  filter_at(vars(worrx, worfreq, worfeelevl), any_vars(!is.na(.)))
+```
+
+Percentage of Anxiety
+=====================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Percentage of people reported taken medication for anxiety
+```{r}
+anxiety %>%
+  drop_na(worrx) %>% 
+  group_by(year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    showlegend = FALSE
+  ) %>% 
+  hide_colorbar()
+```
+
+Column {.tabset}
+-------------------------------------
+
+### By Biological sex
+```{r}
+anxiety %>%
+  drop_na(sex, worrx) %>% 
+  group_by(sex, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~sex,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  add_trace(
+    x = ~year,
+    y = ~wor_percentage,
+    color = ~sex,
+    type='scatter',
+    mode='lines+markers'
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+
+```
+
+### By household income to the poverty line ratio
+```{r}
+anxiety %>%
+  drop_na(poverty, worrx) %>% 
+  group_by(poverty, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~poverty,
+    type = "scatter", 
+    mode = "lines+markers",
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+  
+```
+
+### By martial status 
+```{r}
+anxiety %>%
+  drop_na(marst, worrx) %>% 
+  group_by(marst, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~marst,
+    type = "scatter",
+    mode='lines+markers',
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+```
+
+
+
+Level and Frequency of Anxiety {data-orientation=columns}
+=====================================     
+   
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Level of anxiety
+
+```{r,echo = FALSE, message=FALSE}
+anxiety %>%
+  drop_na(worfeelevl) %>% 
+  group_by(year, worfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfeelevl = worfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Frequency of anxiety
+
+```{r,echo = FALSE, message=FALSE}
+anxiety %>% 
+  drop_na(worfreq) %>% 
+  group_by(year, worfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfreq = worfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
