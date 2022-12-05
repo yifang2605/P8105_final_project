@@ -67,9 +67,9 @@ anxiety =
     worfeelevl = recode_factor(worfeelevl, 
                                '1' = "A lot", 
                                '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-    ) %>% 
-  filter_at(vars(worrx, worfreq, worfeelevl), any_vars(!is.na(.)))
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    ) 
 ```
 
 Percentage of Anxiety
@@ -213,7 +213,24 @@ anxiety %>%
   )
 ```
 
+Age distribution
+=====================================
 
+```{r}
+age_plot = 
+  anxiety %>%
+  drop_na(age, worrx) %>% 
+  ggplot(
+    aes(x=age, group=worrx, fill=worrx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for anxiety"
+  )
+
+ggplotly(age_plot)
+```
 
 Level and Frequency of Anxiety {data-orientation=columns}
 =====================================     

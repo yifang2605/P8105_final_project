@@ -61,9 +61,9 @@ depression =
                             '5' = "Never"),
     depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
                                '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-    ) %>% 
-  filter_at(vars(deprx, depfreq, depfeelevl), any_vars(!is.na(.)))
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    )
 ```
 
 Percentage of Depression
@@ -205,7 +205,24 @@ depression %>%
   )
 ```
 
+Age distribution
+=====================================
 
+```{r}
+age_plot = 
+  depression %>%
+  drop_na(age, deprx) %>% 
+  ggplot(
+    aes(x=age, group=deprx, fill=deprx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for depression"
+  )
+
+ggplotly(age_plot)
+```
 
 Level and Frequency of Depression {data-orientation=columns}
 =====================================     

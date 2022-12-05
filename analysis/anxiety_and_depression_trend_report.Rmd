@@ -39,6 +39,7 @@ theme_set(
 IPUMS Health Surveys: NHIS is a harmonized set of data covering more than 50 years (1963-present) of the National Health Interview Survey (NHIS). The NHIS is the principal source of information on the health of the U.S. population, covering such topics as general health status, the distribution of acute and chronic illness, functional limitations, access to and use of medical services, insurance coverage, and health behaviors. On average, the survey covers 100,000 persons in 45,000 households each year. The IPUMS NHIS facilitates cross-time comparisons of these invaluable survey data by coding variables identically across time. Our analysis will use data from 2015 to 2021, which covers the COVID-19 period. 
 
 ## Data cleaning
+
 We pulled out data from IPUMS Health Surveys: NHIS and will limit our analysis using data from 2015 to 2021. To analyze the trend of anxiety prevalence, frequency and level from 2015 to 2021, we will focus on anxiety indicators listed below:
 
 - WORFREQ:How often feel worried, nervous, or anxious
@@ -53,7 +54,7 @@ To analyze the trend of depression prevalence, frequency and level from 2015 to 
 
 Core demographic and Social economic status indicators listed below are also included in this analysis:
 
-- AGE:Age
+- AGE:Age, individuals with age above 85 is excluded from analysis as 85 is the top code.
 - SEX:Biological sex
 - MARST:Current marital status
 - POVERTY:Ratio of family income to poverty threshold
@@ -105,9 +106,9 @@ anx_dep =
                             '5' = "Never"),
     depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
                                '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-    ) %>% 
-  filter_at(vars(worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl), any_vars(!is.na(.)))
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    ) 
 ```
 
 # Anxiety Trend
@@ -251,6 +252,23 @@ anx_dep %>%
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     legend = list(orientation = 'h')
+  )
+```
+
+## Age distribution
+
+As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021.
+
+```{r}
+anx_dep %>%
+  drop_na(age, worrx) %>% 
+  ggplot(
+    aes(x=age, group=worrx, fill=worrx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for anxiety"
   )
 ```
 
@@ -465,6 +483,23 @@ anx_dep %>%
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     legend = list(orientation = 'h')
+  )
+```
+
+## Age distribution
+
+As we can see from the plot, the age distribution of people taking medication for depression did not change much from 2015 to 2021.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(age, deprx) %>% 
+  ggplot(
+    aes(x=age, group=deprx, fill=deprx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for depression"
   )
 ```
 
