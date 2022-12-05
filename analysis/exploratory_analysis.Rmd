@@ -1,5 +1,5 @@
 ---
-title: "exploratory_analysis"
+title: "Analysis"
 output: 
   html_document:
     code_folding: hide
@@ -123,7 +123,7 @@ anx_dep =
 
 ### Load and clean data 
 
-```{r}
+```{r, message=FALSE}
 mental_df = 
   read_csv("./data/mental_data.csv") %>% 
   janitor::clean_names() %>% 
@@ -142,7 +142,7 @@ mental_df =
 
 ### Map: Percent of adults reporting any mental illness  by state between 2019-2020
 
-```{r} 
+```{r, message=FALSE} 
 state_mental=
   plot_usmap(
     data = mental_df,
@@ -165,7 +165,7 @@ According to the mental health data collected between 2019 -2020, the mental ill
 
 ### Any/Serious Mental illness numbers (million), by region, 2019-2020
 
-```{r}
+```{r, message=FALSE}
 any_mental_plot = 
   mental_df %>% 
     group_by(region) %>%
@@ -206,7 +206,7 @@ Both any mental illness and serious mental illness are highest in the South, low
 
 ### Any/Serious Mental illness percent, Top 10 states, 2019-2020
 
-```{r}
+```{r, message=FALSE}
 any_top10_plot =
   mental_df %>% 
     filter(row_number(desc(any_mental_per)) <= 10) %>% 
@@ -246,79 +246,6 @@ grid.arrange(any_top10_plot, ser_top10_plot, ncol =2)
 **Comment**
 
 The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
-
-
-
-
-
-
-
-
-## Depression and anxiety
-data cleaning
-
-```{r}
-nhis = 
-  read_csv("data/nhis_data01.csv") %>% 
-  janitor::clean_names() %>% 
-  mutate(
-    worrx = recode_factor(worrx,'1' = "no", '2' = "yes"),
-    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never"),
-    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little"),
-    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
-    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never"),
-    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-  )
-
-recent_yr_df = 
-  nhis %>% 
-  filter(year>2019)
-```
-
----
-title: "Anxiety and Depression Trend"
-output: 
-  html_document:
-    code_folding: hide
-    toc: true
-    toc_float: true
----
-```{r, message=FALSE}
-library(tidyverse)
-library(viridis)
-library(plotly)
-
-knitr::opts_chunk$set(
-	echo = TRUE,
-	warning = FALSE,
-	fig.width = 8, 
-  fig.height = 6,
-  out.width = "90%"
-)
-
-options(
-  ggplot2.continuous.colour = "viridis",
-  ggplot2.continuous.fill = "viridis"
-)
-scale_colour_discrete = scale_colour_viridis_d
-scale_fill_discrete = scale_fill_viridis_d
-theme_set(
-  theme_minimal() + 
-    theme(
-      legend.position = "bottom",
-      plot.title = element_text(hjust = 0.5)
-    )  
-)
-```
-
 
 
 ## Anxiety Trend
@@ -749,7 +676,33 @@ anx_dep %>%
 ```
 
 ## Regression
+data cleaning
 
+```{r, message=FALSE}
+nhis = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    worrx = recode_factor(worrx,'1' = "no", '2' = "yes"),
+    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little")
+  )
+
+recent_yr_df = 
+  nhis %>% 
+  filter(year>2019)
+```
 for plots and analysis, may be we can refe to this website: 
 https://rpubs.com/benhorvath/logistic_regression
 
@@ -798,7 +751,7 @@ glm(deprx ~ sex + poverty + cvddiag,
 
 ### Impoart and tidy dataset
 
-```{r}
+```{r, message=FALSE}
 suicide_df = 
   read_excel(
     "./data/suicide_data.xlsx",
@@ -811,7 +764,7 @@ suicide_df =
     age = as.factor(age)
   )
 
-average_20years = sum(suicide1_df$suicide_no) / sum(suicide1_df$population) * 100000
+average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
 
 suicide_state_df = 
   read_excel(
@@ -833,7 +786,7 @@ suicide_state_df =
 
 ### National trend of suicide rate, 2000-2020, (per 100K, per year)
 
-```{r}
+```{r, message=FALSE}
 suicide_plot = suicide_df %>% 
   group_by(year) %>% 
   summarize(
@@ -852,7 +805,7 @@ suicide_plot = suicide_df %>%
        x = "Year", 
        y = "Suicides per 100k") 
 
-ggplotly(suicide1_plot)
+ggplotly(suicide_plot)
    
 ```
 
@@ -861,7 +814,7 @@ The US national suicide rates increased from 2000 to 2018, then declined from 20
 
 ### suicide  rate for each state, 2014-2020
 
-```{r}
+```{r, message=FALSE}
 suicide_state_df %>% 
   group_by(state) %>% 
   summarize(
@@ -888,7 +841,7 @@ The top 5 states with high suicide rates were WY, AK,
 
 ### Suicide rate by sex
 
-```{r}
+```{r, message=FALSE}
 total_sex_plot = suicide_df %>% 
   group_by(sex) %>% 
   summarize(
@@ -933,7 +886,7 @@ From year 2000 to 2020, the male suicide rate remained apparently higher than th
 
 ### Suicide rate by age
 
-```{r}
+```{r, message=FALSE}
 total_age_plot = suicide_df %>% 
   group_by(age) %>% 
   summarize(
