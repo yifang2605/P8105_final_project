@@ -13,6 +13,8 @@ library(viridis)
 library(plotly)
 library(mgcv)
 library(modelr)
+library(ggmosaic)
+library(patchwork)
 
 library(usmap)
 library(gridExtra)
@@ -74,7 +76,7 @@ anx_dep =
   read_csv("data/nhis_data01.csv") %>% 
   janitor::clean_names() %>% 
   filter(year>=2015) %>% 
-  select(year, worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl, age, sex, marst, poverty) %>% 
+  select(year, worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl, age, sex, marst, poverty, cvddiag) %>% 
   mutate(
     sex = recode_factor(sex, 
                         "1" = "Male", 
@@ -676,46 +678,103 @@ anx_dep %>%
 ```
 
 ## Regression
-data cleaning
 
 ```{r, message=FALSE}
-nhis = 
-  read_csv("data/nhis_data01.csv") %>% 
-  janitor::clean_names() %>% 
+regression_df = 
+  anx_dep %>% 
+  filter(year>2019) %>% 
   mutate(
-    worrx = recode_factor(worrx,'1' = "no", '2' = "yes"),
-    worfreq = recode_factor(worfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never"),
-    worfeelevl = recode_factor(worfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little"),
-    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
-    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
-                            '3' = "Monthly", '4' = "A few times a year", 
-                            '5' = "Never"),
-    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
-                               '3' = "Somewhere between a little and a lot", 
-                               '2' = "A little")
-  )
-
-recent_yr_df = 
-  nhis %>% 
-  filter(year>2019)
+    cvddiag = recode_factor(cvddiag, 
+                        "1" = "Never had COVID-19", 
+                        "2" = "Had COVID-19")
+  ) %>% 
+  select(worrx, deprx, sex, poverty, cvddiag) %>% 
+  drop_na(worrx, deprx, sex, poverty, cvddiag)
 ```
-for plots and analysis, may be we can refe to this website: 
-https://rpubs.com/benhorvath/logistic_regression
 
 ### Worries and anxiety
-logistic regression
 
 whether taken medication for worried, nervous, or anxious feelings is associated with covid-19 adjusting for sex and family income level.
 
-```{r}
-glm(worrx ~ sex + poverty + cvddiag, 
+Mosaic Plot for included variables:
+
+```{r, message=FALSE}
+sex_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, sex),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90)
+  )
+
+poverty_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, poverty),
+      fill = worrx
+    ),
+    offset = 0.01
+  )+ 
+  labs(
+    x="", 
+    y="",
+    fill = "Whether taken medicine for anxiety"
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90)
+  )
+
+cvddiag_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, cvddiag),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90),
+  )
+  
+sex_worrx + poverty_worrx + cvddiag_worrx + plot_layout(ncol = 3)
+```
+
+```{r, message=FALSE}
+anxiety_model = 
+  glm(worrx ~ sex + poverty + cvddiag, 
                             family=binomial(link='logit'),
-                            data = recent_yr_df) %>% 
-    broom::tidy(conf.int = TRUE) %>% 
+                            data = regression_df)
+```
+
+```{r}
+anxiety_model %>%  
+  broom::tidy(conf.int = TRUE) %>% 
     mutate(
       odds_ratio = exp(estimate),
       low = exp(conf.low),
@@ -723,19 +782,91 @@ glm(worrx ~ sex + poverty + cvddiag,
     ) %>% 
     select(term, odds_ratio, low, high) %>% 
   knitr::kable(digits=2)
-
 ```
+
+
 
 ### depression
 
 whether taken medication for depression is associated with covid-19 adjusting for sex and family income level.
 
-```{r}
+```{r, message=FALSE}
+sex_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, sex),
+      fill = deprx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90)
+  )
 
-glm(deprx ~ sex + poverty + cvddiag, 
+poverty_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, poverty),
+      fill = deprx
+    ),
+    offset = 0.01
+  )+ 
+  labs(
+    x="", 
+    y="",
+    fill = "Whether taken medicine for depression"
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90)
+  )
+
+cvddiag_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, cvddiag),
+      fill = deprx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90),
+  )
+  
+sex_deprx + poverty_deprx + cvddiag_deprx + plot_layout(ncol = 3)
+```
+
+```{r, message=FALSE}
+depression_model = 
+  glm(deprx ~ sex + poverty + cvddiag, 
                             family=binomial(link='logit'),
-                            data = recent_yr_df) %>% 
-    broom::tidy(conf.int = TRUE) %>% 
+                            data = regression_df)
+```
+
+```{r}
+depression_model %>%  
+  broom::tidy(conf.int = TRUE) %>% 
     mutate(
       odds_ratio = exp(estimate),
       low = exp(conf.low),
@@ -743,7 +874,6 @@ glm(deprx ~ sex + poverty + cvddiag,
     ) %>% 
     select(term, odds_ratio, low, high) %>% 
   knitr::kable(digits=2)
-
 ```
 
 ## Suicide Analysis
