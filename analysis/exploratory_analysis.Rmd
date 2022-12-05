@@ -886,4 +886,46 @@ Comment:
 Wyoming had the highest suicide rate and New Jersey had the lowest sucide rate from 2014-2020.
 The top 5 states with high suicide rates were WY, AK, 
 
+### Suicide rate by sex
 
+```{r}
+total_sex_plot = suicide_df %>% 
+  group_by(sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = sex, y = suicide_100k, fill = sex )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 24, 4)) +
+  labs(
+    title = "National Suicide Rate, by Sex", 
+    x = "Sex", 
+    y = "Suicides per 100k")
+
+
+year_sex_plot = suicide_df %>% 
+  group_by(year, sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k, color = sex)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 30, 5)) +
+  labs(
+    title = "Suicide Trend Over Years, by Sex",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+grid.arrange(total_sex_plot, year_sex_plot, ncol = 2 )
+```
+
+Comment:
+Nationally, the overall suicide rate for males is about 4 times that of females. 
+For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
+From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
