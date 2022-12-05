@@ -859,6 +859,31 @@ ggplotly(suicide1_plot)
 Comment:
 The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
 
+### suicide  rate for each state, 2014-2020
 
+```{r}
+suicide_state_df %>% 
+  group_by(state) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  mutate(
+    state = fct_reorder(state, suicide_100k)) %>% 
+  ggplot(aes(x = suicide_100k, y = state, fill = state )) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 30, 2)) +
+  labs(
+    title = "Suicide Rate, by State, 2014-2020", 
+    x = "Suicide rate per 100k", 
+    y = "State") +
+  theme(legend.position = "right")
+
+```
+
+Comment: 
+Wyoming had the highest suicide rate and New Jersey had the lowest sucide rate from 2014-2020.
+The top 5 states with high suicide rates were WY, AK, 
 
 
