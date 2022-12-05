@@ -795,48 +795,42 @@ glm(deprx ~ sex + poverty + cvddiag,
 
 ## Suicide Analysis
 
-### Overal suicide death trend across years
+
+### Impoart and tidy dataset
 
 ```{r}
 suicide_df = 
   read_excel(
     "./data/suicide_data.xlsx",
     sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+
+average_20years = sum(suicide1_df$suicide_no) / sum(suicide1_df$population) * 100000
+
+suicide_state_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 2,
     range = "A1:D351",
     skip = 1,
     col_names = TRUE) %>% 
-  janitor::clean_names() 
-
-suicide_df %>% 
-  group_by(year) %>% 
-  summarize(deaths = sum(deaths)) %>% 
-  ggplot(aes(x = year, y = deaths)) +
-  geom_line(col = "deepskyblue3", size = 1) +
-  geom_point(col = "deepskyblue3", size = 2) +
-  labs(
-    title = "Suicide Death Toll",
-    x = "Year",
-    y = "Suicide death") +
-  scale_x_continuous(breaks = seq(2014, 2020, 1)) +
-  scale_y_continuous(breaks = seq(42000,49000, 1000))
- 
+  janitor::clean_names() %>% 
+  rename(
+     suicide_no = deaths,
+     suicide_100k = death_rate) %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000
+  )
+  
+  
 ```
 
-Comment: The peak suicide death number was about 48500 per 100K in 2018.
-
-### suicide death rate for each state, 2014-2020
-
-```{r}
-suicide_df %>% 
-  ggplot(aes(x = state, y = death_rate, color = year)) +
-  geom_line(size = 1) +
-  geom_point(size = 2) +
-  labs(
-    title = "Suicide Death Rate for Each State, 2014-2020",
-    x = "State",
-    y = "Suicide death rate per 100K") 
- 
-```
 
 
 
