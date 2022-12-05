@@ -831,6 +831,33 @@ suicide_state_df =
   
 ```
 
+### National trend of suicide rate, 2000-2020, (per 100K, per year)
+
+```{r}
+suicide_plot = suicide_df %>% 
+  group_by(year) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  ggplot(aes(x = year, y = suicide_100k)) +
+  geom_line(col = "deepskyblue", size = 1) +
+  geom_point(col = "deepskyblue", size = 2) +
+  geom_hline(
+    yintercept = average_20years, linetype = 2, color = "red", size = 1) +
+  scale_x_continuous(breaks = seq(2000, 2020, 5)) + 
+  scale_y_continuous(breaks = seq(8, 18, 1)) +
+  labs(title = "US National Suicide Rate (per 100K), 2020-2022",
+       x = "Year", 
+       y = "Suicides per 100k") 
+
+ggplotly(suicide1_plot)
+   
+```
+
+Comment:
+The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
 
 
 
