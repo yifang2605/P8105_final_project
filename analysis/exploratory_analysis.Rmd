@@ -929,3 +929,49 @@ Comment:
 Nationally, the overall suicide rate for males is about 4 times that of females. 
 For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
 From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
+
+
+### Suicide rate by age
+
+```{r}
+total_age_plot = suicide_df %>% 
+  group_by(age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = age, y = suicide_100k, fill = age )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 20, 2)) +
+  labs(
+    title = "National Suicide Rate, by Age", 
+    x = "Age", 
+    y = "Suicides per 100k")
+
+
+year_age_plot = suicide_df %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 24, 2)) +
+  labs(
+    title = "Suicide Trend Over Years, by Age",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+grid.arrange(total_age_plot, year_age_plot, ncol = 2 )
+```
+
+Comment:
+Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
+From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
+The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
+
