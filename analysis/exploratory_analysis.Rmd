@@ -1044,6 +1044,20 @@ suicide_state_df =
     population = (suicide_no / suicide_100k) * 100000
   )
   
+suicide_means_df =
+   read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 3,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    firearm:others,
+    names_to = "means",
+    values_to = "rate"
+  ) %>% 
+  mutate(
+       sex = as.factor(sex),
+       means = as.factor(means)) 
   
 ```
 
@@ -1075,7 +1089,7 @@ ggplotly(suicide_plot)
 Comment:
 The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
 
-### suicide  rate for each state, 2014-2020
+### suicide rate for each state, 2014-2020
 
 ```{r, message=FALSE}
 suicide_state_df %>% 
@@ -1099,8 +1113,29 @@ suicide_state_df %>%
 ```
 
 Comment: 
-Wyoming had the highest suicide rate and New Jersey had the lowest sucide rate from 2014-2020.
-The top 5 states with high suicide rates were WY, AK, 
+Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
+The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut. 
+
+### Suicide rate for each state over years, 2014-2020
+
+```{r}
+suicide_state_df %>% 
+  ggplot(aes(x = suicide_100k, y = state, color = year)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Suicide Rate for Each State Over Years, 2014-2020",
+    x = "State",
+    y = "Suicide per 100K") +
+  theme(legend.position = "right")
+
+
+```
+
+Comment:
+
+Between 2014 and 2020, the state with the largest change in suicide rate was Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate was New York, from 7.8 to 8.3.
+
 
 ### Suicide rate by sex
 
@@ -1190,4 +1225,119 @@ Comment:
 Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
 From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
 The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
+
+### Suicide rate for females, by age group, 2000-2020
+
+```{r}
+female_plot = suicide_df %>% 
+  filter(sex == "female") %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 12, 2)) +
+  labs(
+    title = "Suicide Trend  for Females by Age, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(female_plot)
+```
+
+**Comment:**
+
+* Recently (from 2018 to 2020), suicide rates decreased in females aged 25-44, 45-64, 65-74 and 75+, but increased for those aged 15-24 and kept constant for those aged 10-14.
+* Suicide rates were highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increased from 6.2 in 2000 to the highest 10.2 in 2015, and then declined to 7.9 in 2020.
+* Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
+* The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
+
+### Suicide rate for males, by age group, 2000-2020
+
+```{r}
+male_plot =  suicide_df %>% 
+  filter(sex == "male") %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 45, 5)) +
+  labs(
+    title = "Suicide Trend  for Males by Age, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(male_plot)
+
+```
+
+**Comment:**
+
+* Recently (from 2018 to 2020), suicide rates decreased in males aged 45-64 and 65-74, but increased for those aged 10-14, 15-24, 25-44 and 75+.
+* Suicide rates were consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate declined from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increased to 40.5 in 2020.
+* Suicide rates were consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declined from 2.3 in 2000 to 1.2 in 2007, and then increased to 3.6 in 2020.
+* The suicide rates of those aged 10-14 were relatively stable between 2000 and 2020.
+
+### Suicide rate for females, by means of suicide, 2000-2020
+
+```{r}
+female_means_plot = suicide_means_df %>% 
+  filter(sex == "female") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 2.5, 0.5)) +
+  labs(
+    title = "Female Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(female_means_plot)
+```
+
+**Comment**
+
+* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
+* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
+* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
+* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5). 
+
+### Suicide rate for males, by means of suicide, 2000-2020
+
+```{r}
+male_means_plot = suicide_means_df %>% 
+  filter(sex == "male") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 16, 2)) +
+  labs(
+    title = "Male Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(male_means_plot)
+
+```
+
+**Comment**
+
+* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
+* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
+* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
+* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
+* For the same suicide means, the rates for males were generally higher than that of females. 
 
