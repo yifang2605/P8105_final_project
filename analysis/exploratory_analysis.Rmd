@@ -33,7 +33,7 @@ library(readxl)
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
-	fig.width = 9, 
+	fig.width = 12, 
   fig.height = 6,
   out.width = "90%"
 )
@@ -262,7 +262,9 @@ state_mental=
   scale_fill_continuous(
     name = "Mental illness percent (%)",
     label = scales::comma) +
-  theme(legend.position = "right")
+  theme(
+    legend.position = "right",
+    plot.title = element_text(size = 12))
 
 ggplotly(state_mental)
   
@@ -888,7 +890,6 @@ suicide_state_df %>%
     x = "State",
     y = "Suicides per 100K") +
   theme(legend.position = "right")
-
 
 ```
 
