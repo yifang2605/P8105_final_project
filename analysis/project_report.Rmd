@@ -504,7 +504,8 @@ anx_dep %>%
 As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
 
 ```{r, message=FALSE}
-anx_dep %>%
+anxiety_age_plot = 
+  anx_dep %>%
   drop_na(age, worrx) %>% 
   ggplot(
     aes(x=age, group=worrx, fill=worrx)
@@ -514,6 +515,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for anxiety"
   )
+
+ggplotly(anxiety_age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 
@@ -744,7 +748,8 @@ anx_dep %>%
 As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
 
 ```{r, message=FALSE}
-anx_dep %>%
+depression_age_plot = 
+  anx_dep %>%
   drop_na(age, deprx) %>% 
   ggplot(
     aes(x=age, group=deprx, fill=deprx)
@@ -754,6 +759,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for depression"
   )
+
+ggplotly(depression_age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 ### Frequency of depression
@@ -825,7 +833,7 @@ anx_dep %>%
   )
 ```
 
-## Conclusion
+### Conclusion
 
 - Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
 - From 2019 to 2020, there is no major change in the trend of depression. 

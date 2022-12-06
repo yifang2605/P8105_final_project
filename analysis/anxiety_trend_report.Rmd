@@ -232,7 +232,8 @@ anx_dep %>%
 As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
 
 ```{r}
-anx_dep %>%
+age_plot = 
+  anx_dep %>%
   drop_na(age, worrx) %>% 
   ggplot(
     aes(x=age, group=worrx, fill=worrx)
@@ -242,6 +243,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for anxiety"
   )
+
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 ## Frequency of Worried, Nervous, Or Anxious Feelings
