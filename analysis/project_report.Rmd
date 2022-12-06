@@ -62,7 +62,10 @@ Mental health is an important part of overall health and well-being. Mental heal
 1.	What is the general status of mental illness across states in the US?
 2.	What is the overall trend of suicide rate in the US across years?
 3.	What is the difference in suicide rate by state, age, gender, and means of suicide?
-
+4.  What is the overall trend of the percentage, frequency and level of anxiety in the US across years?
+5.  How do trends in anxiety percentages differ by biological sex, household income, marital status, and age?
+6.  What is the overall trend of the percentage, frequency and level of depression in the US across years?
+7.  How do trends in depression percentages differ by biological sex, household income, marital status, and age?
 
 
 ## Data Source
