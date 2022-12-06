@@ -1037,8 +1037,8 @@ suicide_state_df %>%
 ```
 
 Comment: 
-Wyoming had the highest suicide rate and New Jersey had the lowest sucide rate from 2014-2020.
-The top 5 states with high suicide rates were WY, AK, 
+Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
+The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut. 
 
 ### Suicide rate by sex
 
