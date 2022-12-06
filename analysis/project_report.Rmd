@@ -188,8 +188,6 @@ To understand the distribution of suicides across states, we retrieved the suici
 
 * `year`: year, 2000-2020
 * `state`: U.S. state
-* `suicide_no`: number of suicide per 100,000 population
-* `suicide_100k`: suicide rate (suicide per 100k)
 * `sex`: sex group, including female and male
 * `age`: age group, including 10-14, 15-24, 25-44, 45-64, 65-74, 75+
 * `suicide_no`: number of suicide per 100,000 population
@@ -1159,13 +1157,6 @@ regression_df =
 
 Whether taken medication for worried, nervous, or anxious feelings is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
 
-#### Mosaic Plot
-The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for worried, nervous, or anxious feelings) in the population. 
-
-Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for anxiety when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for anxiety in the population.
-
-
-In truth, when comparing male with female, we can observe the largest difference in the proportion of people who took medication for anxiety. It means that among those four variables, the variable sex has the largest difference in the proportion of people who took medication for anxiety.
 
 ```{r, message=FALSE}
 mosi_regression_df = 
@@ -1203,6 +1194,14 @@ mosi_regression_df =
     ) %>%
   drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
 ```
+
+#### Mosaic Plot
+The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for worried, nervous, or anxious feelings) in the population. 
+
+Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for anxiety when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for anxiety in the population.
+
+
+In truth, when comparing male with female, we can observe the largest difference in the proportion of people who took medication for anxiety. It means that among those four variables, the variable sex has the largest difference in the proportion of people who took medication for anxiety.
 
 ```{r, message=FALSE}
 sex_worrx = 
@@ -1395,7 +1394,7 @@ sex_deprx =
   )
 
 poverty_deprx = 
-  mosi_regression_df %>%
+ mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
