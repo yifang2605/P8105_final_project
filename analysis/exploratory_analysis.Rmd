@@ -24,16 +24,16 @@ library(knitr)
 library(kableExtra)
 library(patchwork)
 
-
 library(usmap)
 library(gridExtra)
 library(dplyr)
 library(readxl)
 
+
 knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
-	fig.width = 8, 
+	fig.width = 9, 
   fig.height = 6,
   out.width = "90%"
 )
@@ -67,13 +67,13 @@ Mental health is an important part of overall health and well-being. Mental heal
 
 ## Data Source
 
-*IPUMS Health Surveys: 
+**IPUMS Health Surveys:** 
 NHIS is a harmonized set of data covering more than 50 years (1963-present) of the National Health Interview Survey (NHIS). The NHIS is the principal source of information on the health of the U.S. population, covering such topics as general health status, the distribution of acute and chronic illness, functional limitations, access to and use of medical services, insurance coverage, and health behaviors. On average, the survey covers 100,000 persons in 45,000 households each year. The IPUMS NHIS facilitates cross-time comparisons of these invaluable survey data by coding variables identically across time. Our analysis will use data from 2015 to 2021, which covers the COVID-19 period. 
 
-*National Survey on Drug Use and Health (NSDUH):
+**National Survey on Drug Use and Health (NSDUH):**
 Substance Abuse and Mental Health Services Administration (SAMHSA), Center for Behavioral Health Statistics and Quality, National Survey on Drug Use and Health (NSDUH), 2019 and 2020.
 
-*Centers for Disease Control and Prevention (CDC):
+**Centers for Disease Control and Prevention (CDC):**
 National Center for Injury Prevention and Control. Web-based Injury Statistics Query and Reporting System (WISQARS) (2014-2020).
 National Center for Health Statistics, National Vital Statistics System, Mortality. Data were retrieved using NVSS multiple cause-of-death mortality files for 2000 through 2020. Suicide deaths were identified using International Classification of Diseases, 10th Revision (ICD–10) underlying cause-of-death codes U03, X60–X84, and Y87.0. Means of suicide were identified using ICD–10 codes X72–X74 for firearm, X60–X69 for poisoning, and X70 for suffocation. “Other means” includes: Cut or pierce; Drowning; Falls; Fire or flame; Other land transport; Struck by or against; Other specified, classifiable injury; Other specified, not elsewhere classified injury; and Unspecified injury, as classified by ICD–10.
 
