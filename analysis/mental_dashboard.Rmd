@@ -75,7 +75,9 @@ state_mental =
     legend.position = "right",
     plot.title = element_text(size = 12))
 
-ggplotly(state_mental)
+ggplotly(state_mental)%>%
+  layout(xaxis = list(autorange = TRUE),
+         yaxis = list(autorange = TRUE))
   
 ```
 
