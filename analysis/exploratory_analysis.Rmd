@@ -1257,5 +1257,11 @@ ggplotly(male_means_plot)
 
 ```
 
+**Comment**
 
+* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
+* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
+* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
+* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
+* For the same suicide means, the rates for males were generally higher than that of females. 
 
