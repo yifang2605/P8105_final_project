@@ -60,12 +60,10 @@ Mental health is an important part of overall health and well-being. Mental heal
 ## Questions and Planned Analyses
 
 1.	What is the general status of mental illness across states in the US?
-2.  What is the overall trend of the percentage, frequency and level of anxiety in the US across years?
-3.  How do trends in anxiety percentages differ by biological sex, household income, marital status, and age?
-4.  What is the overall trend of the percentage, frequency and level of depression in the US across years?
-5.  How do trends in depression percentages differ by biological sex, household income, marital status, and age?
-6.  What is the overall suicide trend across years? How does suicide differ by state, age, sex and means?
-7.  What is the association between taking depression or anxious medication and COVID-19 exposure? 
+2.  What is the overall trend of the percentage, frequency and level of anxiety and depression in the US across years?
+3.  How do trends in anxiety and depression percentages differ by biological sex, household income, marital status, and age?
+4.  What is the overall suicide trend across years? How does suicide differ by state, age, sex and means?
+5.  What is the association between taking depression or anxious medication and COVID-19 exposure? 
 
 
 ## Data Source
@@ -244,9 +242,13 @@ suicide_means_df =
   
 ```
 
-## Mental Illness
+## Exploratory Analysis
 
-### Map: Percent of adults reporting any mental illness  by state between 2019-2020
+### Mental Illness
+
+#### Map: Percent of adults reporting any mental illness  by state between 2019-2020
+
+According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
 
 ```{r, message=FALSE} 
 state_mental=
@@ -269,9 +271,9 @@ ggplotly(state_mental)
   
 ```
 
-According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
+#### Any/Serious Mental illness numbers (million), by region, 2019-2020
 
-### Any/Serious Mental illness numbers (million), by region, 2019-2020
+Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
 
 ```{r, message=FALSE}
 any_mental_plot = 
@@ -308,11 +310,9 @@ grid.arrange(any_mental_plot, ser_mental_plot, ncol =2)
   
 ```
 
-**Comment**
-Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
+#### Any/Serious Mental illness percent, Top 10 states, 2019-2020
 
-
-### Any/Serious Mental illness percent, Top 10 states, 2019-2020
+The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
 
 ```{r, message=FALSE}
 any_top10_plot =
@@ -351,14 +351,10 @@ grid.arrange(any_top10_plot, ser_top10_plot, ncol =2)
 
 ```
 
-**Comment**
 
-The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
+### Anxiety
 
-
-## Anxiety Trend
-
-### Percentage of people reported taken medication for worried, nervous, or anxious feelings
+#### Percentage of people reported taken medication for worried, nervous, or anxious feelings
 According to the plot, from 2015 to 2021, the percentage of people who report taking medication for worry, stress or anxiety is constantly increasing from 9.13% in 2015 to 13.57% in 2021. We can observe a rapid increase from 2017 to 2019 and, contrary to our expectations, a relatively slow increase from 2019 to 2020. The effect of COVID-19 on anxiety percentage is not evident in this plot.
 
 ```{r, message=FALSE}
@@ -391,7 +387,7 @@ anx_dep %>%
   hide_colorbar()
 ```
 
-####  Stratify by Biological sex
+#####  Stratify by Biological sex
 Stratify the reported percentage of people taking medication for worried, nervous, or anxious feelings by biological sex, we can observe a much higher percentage among females than males. There is also a faster increase in the percentage among females from 14.41% in 2018 to 16.52% in 2019. Among males, the percentage is relatively stable from 2018 to 2020, while there is an increase from 2020 to 2021. Considering the fact that COVID-19 is prevalent in the United States starting in 2020, the effect of COVID-19 on anxiety percentage is not evident for either sex.
 
 ```{r, message=FALSE}
@@ -431,7 +427,7 @@ anx_dep %>%
 
 ```
 
-#### Stratify by ratio of family income to poverty threshold
+##### Stratify by ratio of family income to poverty threshold
 
 Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest income stratum decreased rapidly from 17.30% in 2017 to 15.84% in 2018, which is the opposite of what happened in the other two strata. Although the percentage of the lowest income stratum decreased rapidly from 2017 to 2018, they still had the highest percentage of the three strata, and this decrease was followed by a rapid increase from 15.84% in 2018 to 18.58% in 2019. From 2020 to 2021, the percentage decreases for the other two strata, while for the highest-income stratum, the percentage steadily increases. Although household income appears to have an effect on anxiety, the effect of COVID-19 on anxiety is not evident for all three strata.
 
@@ -467,7 +463,7 @@ anx_dep %>%
   
 ```
 
-#### Stratify by current martial status
+##### Stratify by current martial status
 Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by current martial status, we can observe a rapid increase from 14.31% in 2019 to 17.49% in 2020 in those separated. Considering the timing, this could be an effect of COVID-19.For other strata, the effect of COVID-19 is not obvious.
 
 ```{r, message=FALSE}
@@ -500,7 +496,7 @@ anx_dep %>%
   )
 ```
 
-### Age distribution
+#### Age distribution
 
 As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
 
@@ -522,7 +518,7 @@ ggplotly(anxiety_age_plot) %>%
 ```
 
 
-### Frequency of worried, nervous, or anxious feelings
+#### Frequency of worried, nervous, or anxious feelings
 
 From this bar plot about how often people feel worried, nervous, or anxious, we can observe that the frequency is steadily increasing from 2015 to 2021. There is also a rapid increase from 2019 to 2020, which could be COVID-19 related.
 
@@ -557,7 +553,7 @@ anx_dep %>%
   )
 ```
 
-### Level of worried, nervous, or anxious feelings
+#### Level of worried, nervous, or anxious feelings
 From this bar plot about the level of worried, nervous, or anxious feelings people felt last time, we can observe a relatively large increase from 2018 to 2019 in the percentage of people who felt worried, stressed, or anxious a lot or between a little and a lot. However, the distribution did not change much from 2019 to 2020, which indicates that the impact of COVID-19 on level of anxiety may not be significant.
 
 ```{r, message=FALSE}
@@ -591,16 +587,16 @@ anx_dep %>%
   )
 ```
 
-### Conclusion
+#### Conclusion
 
 - Contrary to our expectation, the association between COVID-19 and anxiety may not be significant from the plots. 
 - There is no major change in the trend of anxiety from 2019 to 2020. 
 - The increase in anxiety actually occurred prior to the COVID-19 period. 
 - Other factors such as biological sex and household income seem to have an greater impact on anxiety.
 
-## Depression Trend
+### Depression
 
-### Percentage of people reported taken medication for depression
+#### Percentage of people reported taken medication for depression
 According to the plot, the proportion of people reported taken medication for depression increased from 8.75% in 2015 to 11.42% in 2020, followed by a slight decrease from 2020 to 2021. COVID-19 appears to have a limited impact on depression percentage.
 
 ```{r, message=FALSE}
@@ -633,7 +629,7 @@ anx_dep %>%
   hide_colorbar()
 ```
 
-#### Stratify by Biological sex
+##### Stratify by Biological sex
 
 Stratify the reported percentage of people taking medication for depression by biological sex, we can observe a much higher percentage among females than males. There are also a faster increase in the percentage among females from 12.68% in 2017 to 15.14% in 2020 and a decrease from 15.14% in 2020 to 14.52% in 2021. Contrary to females, the percentage slightly decreased from 2018 to 2019 and then increased from 2020 to 2021 among males. The effect of COVID-19 is not evident fro either sex from this plot.
 
@@ -674,7 +670,7 @@ anx_dep %>%
 
 ```
 
-#### Stratify by ratio of family income to poverty threshold
+##### Stratify by ratio of family income to poverty threshold
 
 Stratify the percentage of people reported taken medication for depression by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest-income stratum decreased from 17.41% in 2017 to 16.53% in 2018, which is the opposite of what happened in the other two strata. The change in the percentage is quite stable from 2018 to 2019 among all three strata. There is a rapid increase from 17.02% in 2019 to 18.66% in 2020, which may indicate that people belonging to the lowest-income stratum are affected by COVID-19 related depression. For other two strata, the effect of COVID-19 is not evident.
 
@@ -710,7 +706,7 @@ anx_dep %>%
   
 ```
 
-#### Stratify by current martial status
+##### Stratify by current martial status
 Stratify the percentage of people reported taken medication for depression by current martial status, we can observe a rapid decrease from 17.26% in 2016 to 13.12% in 2019 among separated, while this downward trend slows from 2018 to 2019 and reverses from 2019 to 2020. This reversal may be associated with COVID-19. The trends are similar for married and never married, divorced and widowed. The effect of COVID-19 is not evident for these three strata.
 
 ```{r, message=FALSE}
@@ -744,7 +740,7 @@ anx_dep %>%
 ```
 
 
-### Age distribution
+#### Age distribution
 
 As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
 
@@ -765,7 +761,7 @@ ggplotly(depression_age_plot) %>%
   layout(legend = list(orientation = "h"))
 ```
 
-### Frequency of depression
+#### Frequency of depression
 
 From this bar plot about how often people feel depressed, we can observe that the frequency is quite stable and there is no clear evidence of the effect of COVID-19 on the frequency of depression.
 
@@ -800,7 +796,7 @@ anx_dep %>%
   )
 ```
 
-### Level of depression
+#### Level of depression
 From this bar plot about the level of depression last time, we can see that the percentage of people who felt "a lot" or "between a little and a lot depression" is stable over the time period and a decrease of percentage of people feel "a lot depression" from 2018 to 2019. There is also no clear evidence of the effect of COVID-19 on the level of depression.
 
 ```{r, message=FALSE}
@@ -834,15 +830,17 @@ anx_dep %>%
   )
 ```
 
-### Conclusion
+#### Conclusion
 
 - Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
 - From 2019 to 2020, there is no major change in the trend of depression. 
 - Other factors such as biological sex and household income seem to have an greater impact on depression.
 
-## Suicide Analysis
+### Suicide
 
-### National trend of suicide rate, 2000-2020, (per 100K, per year)
+#### National trend of suicide rate, 2000-2020, (per 100K, per year)
+
+The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
 
 ```{r, message=FALSE}
 suicide_plot = suicide_df %>% 
@@ -867,10 +865,10 @@ ggplotly(suicide_plot)
    
 ```
 
-Comment:
-The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
+#### Cumulative suicide rate for each state, 2014-2020
 
-### Cumulative suicide rate for each state, 2014-2020
+Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
+The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut.
 
 ```{r, message=FALSE}
 suicide_state_df %>% 
@@ -893,11 +891,11 @@ suicide_state_df %>%
 
 ```
 
-Comment: 
-Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
-The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut. 
+ 
 
-### Suicide rate for each state over years, 2014-2020
+#### Suicide rate for each state over years, 2014-2020
+
+Between 2014 and 2020, the state with the largest change in suicide rate was Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate was New York, from 7.8 to 8.3.
 
 ```{r, message=FALSE}
 suicide_state_df %>% 
@@ -912,12 +910,12 @@ suicide_state_df %>%
 
 ```
 
-Comment:
 
-Between 2014 and 2020, the state with the largest change in suicide rate was Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate was New York, from 7.8 to 8.3.
+#### Suicide rate by sex
 
-
-### Suicide rate by sex
+Nationally, the overall suicide rate for males is about 4 times that of females. 
+For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
+From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
 
 ```{r, message=FALSE}
 total_sex_plot = suicide_df %>% 
@@ -956,13 +954,12 @@ year_sex_plot = suicide_df %>%
 grid.arrange(total_sex_plot, year_sex_plot, ncol = 2 )
 ```
 
-Comment:
-Nationally, the overall suicide rate for males is about 4 times that of females. 
-For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
-From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
 
+#### Suicide rate by age
 
-### Suicide rate by age
+Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
+From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
+The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
 
 ```{r, message=FALSE}
 total_age_plot = suicide_df %>% 
@@ -1001,12 +998,13 @@ year_age_plot = suicide_df %>%
 grid.arrange(total_age_plot, year_age_plot, ncol = 2 )
 ```
 
-Comment:
-Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
-From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
-The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
 
-### Suicide rate for females, by age group, 2000-2020
+##### Suicide rate for females, by age group, 2000-2020
+
+* Recently (from 2018 to 2020), suicide rates decreased in females aged 25-44, 45-64, 65-74 and 75+, but increased for those aged 15-24 and kept constant for those aged 10-14.
+* Suicide rates were highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increased from 6.2 in 2000 to the highest 10.2 in 2015, and then declined to 7.9 in 2020.
+* Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
+* The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
 
 ```{r, message=FALSE}
 female_plot = suicide_df %>% 
@@ -1030,14 +1028,12 @@ female_plot = suicide_df %>%
 ggplotly(female_plot)
 ```
 
-**Comment:**
+#### Suicide rate for males, by age group, 2000-2020
 
-* Recently (from 2018 to 2020), suicide rates decreased in females aged 25-44, 45-64, 65-74 and 75+, but increased for those aged 15-24 and kept constant for those aged 10-14.
-* Suicide rates were highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increased from 6.2 in 2000 to the highest 10.2 in 2015, and then declined to 7.9 in 2020.
-* Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
-* The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
-
-### Suicide rate for males, by age group, 2000-2020
+* Recently (from 2018 to 2020), suicide rates decreased in males aged 45-64 and 65-74, but increased for those aged 10-14, 15-24, 25-44 and 75+.
+* Suicide rates were consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate declined from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increased to 40.5 in 2020.
+* Suicide rates were consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declined from 2.3 in 2000 to 1.2 in 2007, and then increased to 3.6 in 2020.
+* The suicide rates of those aged 10-14 were relatively stable between 2000 and 2020.
 
 ```{r, message=FALSE}
 male_plot =  suicide_df %>% 
@@ -1062,14 +1058,13 @@ ggplotly(male_plot)
 
 ```
 
-**Comment:**
 
-* Recently (from 2018 to 2020), suicide rates decreased in males aged 45-64 and 65-74, but increased for those aged 10-14, 15-24, 25-44 and 75+.
-* Suicide rates were consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate declined from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increased to 40.5 in 2020.
-* Suicide rates were consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declined from 2.3 in 2000 to 1.2 in 2007, and then increased to 3.6 in 2020.
-* The suicide rates of those aged 10-14 were relatively stable between 2000 and 2020.
+#### Suicide rate for females, by means of suicide, 2000-2020
 
-### Suicide rate for females, by means of suicide, 2000-2020
+* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
+* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
+* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
+* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5).
 
 ```{r, message=FALSE}
 female_means_plot = suicide_means_df %>% 
@@ -1087,14 +1082,14 @@ female_means_plot = suicide_means_df %>%
 ggplotly(female_means_plot)
 ```
 
-**Comment**
 
-* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
-* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
-* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
-* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5). 
+#### Suicide rate for males, by means of suicide, 2000-2020
 
-### Suicide rate for males, by means of suicide, 2000-2020
+* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
+* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
+* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
+* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
+* For the same suicide means, the rates for males were generally higher than that of females.
 
 ```{r, message=FALSE}
 male_means_plot = suicide_means_df %>% 
@@ -1113,17 +1108,8 @@ ggplotly(male_means_plot)
 
 ```
 
-**Comment**
 
-* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
-* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
-* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
-* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
-* For the same suicide means, the rates for males were generally higher than that of females. 
-
-
-
-## Regression Analyses
+## Regression
 
 ```{r, message=FALSE}
 regression_df = 
@@ -1162,7 +1148,7 @@ regression_df =
   drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
 ```
 
-### **Worries and anxiety**
+### Worries and anxiety
 
 Whether taken medication for worried, nervous, or anxious feelings is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
 
@@ -1296,7 +1282,22 @@ cvddiag_worrx =
     axis.text.x = element_text(angle = 90, hjust = 1),
   )
   
-sex_worrx + poverty_worrx + marital_status_worrx +cvddiag_worrx + plot_layout(ncol = 4)
+sex_worrx = ggplotly(sex_worrx)
+
+poverty_worrx = 
+  ggplotly(poverty_worrx) %>%
+  layout(legend = list(orientation = "h"))
+
+marital_status_worrx = ggplotly(marital_status_worrx)
+
+cvddiag_worrx = ggplotly(cvddiag_worrx)
+  
+subplot(
+  style(sex_worrx, showlegend = F), 
+  style(cvddiag_worrx, showlegend = F), 
+  style(marital_status_worrx, showlegend = F), 
+  poverty_worrx, nrows=1) %>% 
+  layout(legend = list(x = 0, y = -0.4))
 ```
 
 #### Diagnostics
@@ -1369,7 +1370,7 @@ Hence, we found no statistically significant association between COVID-19 status
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness.
 
 
-### **Depression**
+### Depression
 
 Whether taken medication for depression is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
 
@@ -1464,7 +1465,23 @@ cvddiag_deprx =
     axis.text.x = element_text(angle = 90, hjust = 1),
   )
   
-sex_deprx + poverty_deprx + marital_status_deprx +cvddiag_deprx + plot_layout(ncol = 4)
+sex_deprx = ggplotly(sex_deprx)
+
+poverty_deprx = 
+  ggplotly(poverty_deprx) %>%
+  layout(legend = list(orientation = "h"))
+
+marital_status_deprx = ggplotly(marital_status_deprx)
+
+cvddiag_deprx = ggplotly(cvddiag_deprx)
+  
+subplot(
+  style(sex_deprx, showlegend = F), 
+  style(cvddiag_deprx, showlegend = F), 
+  style(marital_status_deprx, showlegend = F), 
+  poverty_deprx, nrows=1) %>% 
+  layout(legend = list(x = 0, y = -0.4))
+
 ```
 
 
