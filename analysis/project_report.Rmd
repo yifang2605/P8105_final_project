@@ -1,0 +1,1488 @@
+---
+title: "Project Report"
+output: 
+  html_document:
+    code_folding: hide
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+ 
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(mgcv)
+library(modelr)
+library(ggmosaic)
+
+library(lmtest)
+library(performance)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+
+library(usmap)
+library(gridExtra)
+library(dplyr)
+library(readxl)
+
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 12, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+## Motivation
+
+Mental health is an important part of overall health and well-being. Mental health includes our emotional, psychological, and social well-being. Mental health problems exist frequently throughout the United States. About one in five adults suffer from a diagnosable mental illness in a given year. Many common mental illnesses, such as depression, anxiety, bipolar disorder, may increase risk of suicide. 
+
+## Questions and Planned Analyses
+
+1.	What is the general status of mental illness across states in the US?
+2.	What is the overall trend of suicide rate in the US across years?
+3.	What is the difference in suicide rate by state, age, gender, and means of suicide?
+
+
+
+## Data Source
+
+**IPUMS Health Surveys:** 
+NHIS is a harmonized set of data covering more than 50 years (1963-present) of the National Health Interview Survey (NHIS). The NHIS is the principal source of information on the health of the U.S. population, covering such topics as general health status, the distribution of acute and chronic illness, functional limitations, access to and use of medical services, insurance coverage, and health behaviors. On average, the survey covers 100,000 persons in 45,000 households each year. The IPUMS NHIS facilitates cross-time comparisons of these invaluable survey data by coding variables identically across time. Our analysis will use data from 2015 to 2021, which covers the COVID-19 period. 
+
+**National Survey on Drug Use and Health (NSDUH):**
+Substance Abuse and Mental Health Services Administration (SAMHSA), Center for Behavioral Health Statistics and Quality, National Survey on Drug Use and Health (NSDUH), 2019 and 2020.
+
+**Centers for Disease Control and Prevention (CDC):**
+CDC WONDER online databases, deaths(2014-2020). Data were collected from the WONDER online databases under the category of the compressed mortality. 
+National Center for Health Statistics, National Vital Statistics System, Mortality. Data were retrieved using NVSS multiple cause-of-death mortality files for 2000 through 2020. Suicide deaths were identified using International Classification of Diseases, 10th Revision (ICD–10) underlying cause-of-death codes U03, X60–X84, and Y87.0. Means of suicide were identified using ICD–10 codes X72–X74 for firearm, X60–X69 for poisoning, and X70 for suffocation. “Other means” includes: Cut or pierce; Drowning; Falls; Fire or flame; Other land transport; Struck by or against; Other specified, classifiable injury; Other specified, not elsewhere classified injury; and Unspecified injury, as classified by ICD–10.
+
+
+## Data Cleaning
+
+### Mental illness data
+
+To understand the distribution of mental illness across states, we retrieved the mental illness data from the National Survey on Drug Use and Health (NSDUH),2019-2020. We focused on adults reporting any mental illness and adults reporting serious mental illness from 2019 to 2020. Number of adults reporting any mental illness and serious mental illness were rounded to the nearest 1,000. Serious mental illness (SMI) is defined as having a diagnosable mental, behavioral, or emotional disorder, other than a developmental or substance use disorder, as assessed by the Mental Health Surveillance Study (MHSS) Structured Clinical Interview for the Diagnostic and Statistical Manual of Mental Disorders. Estimates of SMI are a subset of estimates of any mental illness (AMI) because SMI is limited to people with AMI that resulted in serious functional impairment. The dataset included the mental illness data for 50 states and Washiongton D.C. The variables we focused were: 
+
+* `state`: U.S. state
+* `any_mental_num`: number of adults reporting any mental illness
+* `any_mental_per`: percent of adults reporting any mental illness
+* `ser_mental_num`: number of adults reporting serious mental illness
+* `ser_mental_per`: percent of adults reporting serious mental illness
+* `state_abb`: abbreviation of states
+* `region`: state regions, including northeast, midwest, south and west
+
+```{r, message=FALSE}
+mental_df = 
+  read_csv("./data/mental_data.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    any_mental_num = any_mental_num / 1000000,
+    any_mental_per = any_mental_per * 100,
+    ser_mental_num = ser_mental_num / 1000000,
+    ser_mental_per = ser_mental_per * 100,
+    state_abb = state.abb[match(state, state.name)],
+    region = state.region[match(state, state.name)]
+  ) %>% 
+  mutate(
+    state_abb = replace(state_abb, state == "District of Columbia", "DC"))
+
+```
+
+### Anxiety and depression data
+
+We pulled out data from IPUMS Health Surveys: NHIS and will limit our analysis using data from 2015 to 2021. To analyze the trend of anxiety prevalence, frequency and level from 2015 to 2021, we will focus on anxiety indicators listed below:
+
+- WORFREQ:How often feel worried, nervous, or anxious
+- WORRX: Take medication for worried, nervous, or anxious feelings
+- WORFEELEVL: Level of worried, nervous, or anxious feelings, last time
+
+To analyze the trend of depression prevalence, frequency and level from 2015 to 2021, we will focus on depression indicators listed below:
+
+- DEPRX:Take medication for depression
+- DEPFREQ:How often feel depressed
+- DEPFEELEVL: Level of depression, last time depressed
+
+Core demographic and Social economic status indicators listed below are also included in this analysis:
+
+- AGE:Age, individuals with age above 85 is excluded from analysis as 85 is the top code.
+- SEX:Biological sex
+- MARST:Current marital status
+- POVERTY:Ratio of family income to poverty threshold
+
+Responses indicate Unknown or not applied are excluded from our analysis.
+
+```{r, message=FALSE}
+anx_dep = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year>=2015) %>% 
+  select(year, worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl, age, sex, marst, poverty) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marst = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married", "12" = "Married", "13" = "Married",
+                        "20" = "Widowed",
+                        "30" = "Divorced",
+                        "40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    worrx = recode_factor(worrx,
+                          '1' = "no", 
+                          '2' = "yes"),
+    worfreq = recode_factor(worfreq, 
+                            '1' = "Daily", 
+                            '2' = "Weekly", 
+                            '3' = "Monthly", 
+                            '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, 
+                               '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    )
+```
+
+### Suicide data
+
+To understand the distribution of suicides across states, we retrieved the suicide data from the online CDC WONDER database,2014-2020. The suicide number is the number of per 100,000 population. The suicide rate is the suicide per 100,000 population. To analyze the overall trend of suicide in the US and the difference in suicide rate by age, gender, and means of suicide, we collected the suicide data from the National Vital Statistics System, Mortality. The age groups excluded the suicide number for people aged 5-9 years. Although suicides for those aged 5-9 years were included in total numbers, they were not included as a studied age group because of the small number of suicides per year in this age group. We focused on 20 years of suicide data from 2000 to 2020, and paid more attention to the changes in suicide trends in recent years (2018-2020). The key variables in the dataset were:
+
+* `year`: year, 2000-2020
+* `state`: U.S. state
+* `suicide_no`: number of suicide per 100,000 population
+* `suicide_100k`: suicide rate (suicide per 100k)
+* `sex`: sex group, including female and male
+* `age`: age group, including 10-14, 15-24, 25-44, 45-64, 65-74, 75+
+* `suicide_no`: number of suicide per 100,000 population
+* `suicide_100k`: suicide rate (suicide per 100k)
+* `means`: means of suicide, including firearm, poisoning, suffocation and others
+
+```{r, message=FALSE}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+
+average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
+
+suicide_state_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 2,
+    range = "A1:D351",
+    skip = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  rename(
+     suicide_no = deaths,
+     suicide_100k = death_rate) %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000
+  )
+  
+suicide_means_df =
+   read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 3,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    firearm:others,
+    names_to = "means",
+    values_to = "rate"
+  ) %>% 
+  mutate(
+       sex = as.factor(sex),
+       means = as.factor(means)) 
+  
+```
+
+
+## Mental Illness
+
+
+### Map: Percent of adults reporting any mental illness  by state between 2019-2020
+
+```{r, message=FALSE} 
+state_mental=
+  plot_usmap(
+    data = mental_df,
+    regions = "state",
+    values = "any_mental_per", 
+    labels = TRUE, label_color = "white") +
+  labs(
+    title = "Percent of adults reporting any mental illness for each state, 2019-2022"
+  ) +
+  scale_fill_continuous(
+    name = "Mental illness percent (%)",
+    label = scales::comma) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(size = 12))
+
+ggplotly(state_mental)
+  
+```
+
+According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
+
+### Any/Serious Mental illness numbers (million), by region, 2019-2020
+
+```{r, message=FALSE}
+any_mental_plot = 
+  mental_df %>% 
+    group_by(region) %>%
+    drop_na() %>% 
+    summarize(any_mental_num = sum(any_mental_num)) %>% 
+    ggplot(
+      aes(x = region, y = any_mental_num, fill = region)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Any Mental Illness Number, by Region, 2019-2020",
+      x = "Region",
+      y = "Mental illness number (million)",
+      fill = "Region") +
+  theme(legend.position = "bottom")
+
+ser_mental_plot =
+  mental_df %>% 
+    group_by(region) %>%
+    drop_na() %>% 
+    summarize(ser_mental_num = sum(ser_mental_num)) %>% 
+    ggplot(
+      aes(x = region, y = ser_mental_num, fill = region)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Serious Mental Illness Number, by Region, 2019-2020",
+      x = "Region",
+      y = "Mental illness number (million)",
+      fill = "Region") +
+    theme(legend.position = "bottom")
+
+grid.arrange(any_mental_plot, ser_mental_plot, ncol =2) 
+  
+```
+
+**Comment**
+Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
+
+
+### Any/Serious Mental illness percent, Top 10 states, 2019-2020
+
+```{r, message=FALSE}
+any_top10_plot =
+  mental_df %>% 
+    filter(row_number(desc(any_mental_per)) <= 10) %>% 
+    mutate(
+      state = fct_reorder(state, any_mental_per)
+    ) %>% 
+    ggplot(
+      aes(x = any_mental_per, y = state, fill = state)) +
+      geom_bar(stat = "identity") +
+      labs(
+        title = "Any Mental Illness Percent, Top 10 States",
+        x = "Any Mental illness percent (%)",
+        y = "State",
+        fill = "State") +
+    theme(legend.position = "bottom")
+
+ser_top10_plot =
+  mental_df %>% 
+    filter(row_number(desc(ser_mental_per)) <= 10) %>% 
+    mutate(
+      state = fct_reorder(state, ser_mental_per)
+    ) %>% 
+    ggplot(
+      aes(x = ser_mental_per, y = state, fill = state)) +
+      geom_bar(stat = "identity") +
+      labs(
+        title = "Serious Mental Illness Percent, Top 10 States",
+        x = "Serious mental illness percent (%)",
+        y = "State",
+      fill = "State") +
+    theme(legend.position = "bottom")
+
+grid.arrange(any_top10_plot, ser_top10_plot, ncol =2) 
+
+```
+
+**Comment**
+
+The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
+
+
+## Anxiety Trend
+
+### Percentage of people reported taken medication for worried, nervous, or anxious feelings
+According to the plot, from 2015 to 2021, the percentage of people who report taking medication for worry, stress or anxiety is constantly increasing from 9.13% in 2015 to 13.57% in 2021. We can observe a rapid increase from 2017 to 2019 and, contrary to our expectations, a relatively slow increase from 2019 to 2020. The effect of COVID-19 on anxiety percentage is not evident in this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(worrx) %>% 
+  group_by(year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    showlegend = FALSE
+  ) %>% 
+  hide_colorbar()
+```
+
+####  Stratify by Biological sex
+Stratify the reported percentage of people taking medication for worried, nervous, or anxious feelings by biological sex, we can observe a much higher percentage among females than males. There is also a faster increase in the percentage among females from 14.41% in 2018 to 16.52% in 2019. Among males, the percentage is relatively stable from 2018 to 2020, while there is an increase from 2020 to 2021. Considering the fact that COVID-19 is prevalent in the United States starting in 2020, the effect of COVID-19 on anxiety percentage is not evident for either sex.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(sex, worrx) %>% 
+  group_by(sex, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~sex,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  add_trace(
+    x = ~year,
+    y = ~wor_percentage,
+    color = ~sex,
+    type='scatter',
+    mode='lines+markers'
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+
+```
+
+#### Stratify by ratio of family income to poverty threshold
+
+Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest income stratum decreased rapidly from 17.30% in 2017 to 15.84% in 2018, which is the opposite of what happened in the other two strata. Although the percentage of the lowest income stratum decreased rapidly from 2017 to 2018, they still had the highest percentage of the three strata, and this decrease was followed by a rapid increase from 15.84% in 2018 to 18.58% in 2019. From 2020 to 2021, the percentage decreases for the other two strata, while for the highest-income stratum, the percentage steadily increases. Although household income appears to have an effect on anxiety, the effect of COVID-19 on anxiety is not evident for all three strata.
+
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(poverty, worrx) %>% 
+  group_by(poverty, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~poverty,
+    type = "scatter", 
+    mode = "lines+markers",
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+  
+```
+
+#### Stratify by current martial status
+Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by current martial status, we can observe a rapid increase from 14.31% in 2019 to 17.49% in 2020 in those separated. Considering the timing, this could be an effect of COVID-19.For other strata, the effect of COVID-19 is not obvious.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(marst, worrx) %>% 
+  group_by(marst, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~marst,
+    type = "scatter",
+    mode='lines+markers',
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+```
+
+### Age distribution
+
+As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(age, worrx) %>% 
+  ggplot(
+    aes(x=age, group=worrx, fill=worrx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for anxiety"
+  )
+```
+
+
+### Frequency of worried, nervous, or anxious feelings
+
+From this bar plot about how often people feel worried, nervous, or anxious, we can observe that the frequency is steadily increasing from 2015 to 2021. There is also a rapid increase from 2019 to 2020, which could be COVID-19 related.
+
+```{r, message=FALSE}
+anx_dep %>% 
+  drop_na(worfreq) %>% 
+  group_by(year, worfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfreq = worfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+### Level of worried, nervous, or anxious feelings
+From this bar plot about the level of worried, nervous, or anxious feelings people felt last time, we can observe a relatively large increase from 2018 to 2019 in the percentage of people who felt worried, stressed, or anxious a lot or between a little and a lot. However, the distribution did not change much from 2019 to 2020, which indicates that the impact of COVID-19 on level of anxiety may not be significant.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(worfeelevl) %>% 
+  group_by(year, worfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfeelevl = worfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+### Conclusion
+
+- Contrary to our expectation, the association between COVID-19 and anxiety may not be significant from the plots. 
+- There is no major change in the trend of anxiety from 2019 to 2020. 
+- The increase in anxiety actually occurred prior to the COVID-19 period. 
+- Other factors such as biological sex and household income seem to have an greater impact on anxiety.
+
+## Depression Trend
+
+### Percentage of people reported taken medication for depression
+According to the plot, the proportion of people reported taken medication for depression increased from 8.75% in 2015 to 11.42% in 2020, followed by a slight decrease from 2020 to 2021. COVID-19 appears to have a limited impact on depression percentage.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(deprx) %>% 
+  group_by(year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    showlegend = FALSE
+  ) %>% 
+  hide_colorbar()
+```
+
+#### Stratify by Biological sex
+
+Stratify the reported percentage of people taking medication for depression by biological sex, we can observe a much higher percentage among females than males. There are also a faster increase in the percentage among females from 12.68% in 2017 to 15.14% in 2020 and a decrease from 15.14% in 2020 to 14.52% in 2021. Contrary to females, the percentage slightly decreased from 2018 to 2019 and then increased from 2020 to 2021 among males. The effect of COVID-19 is not evident fro either sex from this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(sex, deprx) %>% 
+  group_by(sex, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~sex,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  add_trace(
+    x = ~year,
+    y = ~dep_percentage,
+    color = ~sex,
+    type='scatter',
+    mode='lines+markers'
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+
+```
+
+#### Stratify by ratio of family income to poverty threshold
+
+Stratify the percentage of people reported taken medication for depression by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest-income stratum decreased from 17.41% in 2017 to 16.53% in 2018, which is the opposite of what happened in the other two strata. The change in the percentage is quite stable from 2018 to 2019 among all three strata. There is a rapid increase from 17.02% in 2019 to 18.66% in 2020, which may indicate that people belonging to the lowest-income stratum are affected by COVID-19 related depression. For other two strata, the effect of COVID-19 is not evident.
+
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(poverty, deprx) %>% 
+  group_by(poverty, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~poverty,
+    type = "scatter", 
+    mode = "lines+markers",
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+  
+```
+
+#### Stratify by current martial status
+Stratify the percentage of people reported taken medication for depression by current martial status, we can observe a rapid decrease from 17.26% in 2016 to 13.12% in 2019 among separated, while this downward trend slows from 2018 to 2019 and reverses from 2019 to 2020. This reversal may be associated with COVID-19. The trends are similar for married and never married, divorced and widowed. The effect of COVID-19 is not evident for these three strata.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(marst, deprx) %>% 
+  group_by(marst, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~marst,
+    type = "scatter",
+    mode='lines+markers',
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+```
+
+
+### Age distribution
+
+As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(age, deprx) %>% 
+  ggplot(
+    aes(x=age, group=deprx, fill=deprx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    fill = "Whether taken medicine for depression"
+  )
+```
+
+### Frequency of depression
+
+From this bar plot about how often people feel depressed, we can observe that the frequency is quite stable and there is no clear evidence of the effect of COVID-19 on the frequency of depression.
+
+```{r, message=FALSE}
+anx_dep %>% 
+  drop_na(depfreq) %>% 
+  group_by(year, depfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfreq = depfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+### Level of depression
+From this bar plot about the level of depression last time, we can see that the percentage of people who felt "a lot" or "between a little and a lot depression" is stable over the time period and a decrease of percentage of people feel "a lot depression" from 2018 to 2019. There is also no clear evidence of the effect of COVID-19 on the level of depression.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(depfeelevl) %>% 
+  group_by(year, depfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfeelevl = depfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+## Conclusion
+
+- Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
+- From 2019 to 2020, there is no major change in the trend of depression. 
+- Other factors such as biological sex and household income seem to have an greater impact on depression.
+
+## Suicide Analysis
+
+### National trend of suicide rate, 2000-2020, (per 100K, per year)
+
+```{r, message=FALSE}
+suicide_plot = suicide_df %>% 
+  group_by(year) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  ggplot(aes(x = year, y = suicide_100k)) +
+  geom_line(col = "deepskyblue", size = 1) +
+  geom_point(col = "deepskyblue", size = 2) +
+  geom_hline(
+    yintercept = average_20years, linetype = 2, color = "red", size = 1) +
+  scale_x_continuous(breaks = seq(2000, 2020, 5)) + 
+  scale_y_continuous(breaks = seq(8, 18, 1)) +
+  labs(title = "US National Suicide Rate (per 100K), 2020-2022",
+       x = "Year", 
+       y = "Suicides per 100k") 
+
+ggplotly(suicide_plot)
+   
+```
+
+Comment:
+The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
+
+### Cumulative suicide rate for each state, 2014-2020
+
+```{r, message=FALSE}
+suicide_state_df %>% 
+  group_by(state) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  mutate(
+    state = fct_reorder(state, suicide_100k)) %>% 
+  ggplot(aes(x = suicide_100k, y = state, fill = state )) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 30, 2)) +
+  labs(
+    title = "Cumulative Suicide Rate, by State, 2014-2020", 
+    x = "Suicides per 100k", 
+    y = "State") +
+  theme(legend.position = "right")
+
+```
+
+Comment: 
+Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
+The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut. 
+
+### Suicide rate for each state over years, 2014-2020
+
+```{r, message=FALSE}
+suicide_state_df %>% 
+  ggplot(aes(x = suicide_100k, y = state, color = year)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Suicide Rate for Each State Over Years, 2014-2020",
+    x = "State",
+    y = "Suicides per 100K") +
+  theme(legend.position = "right")
+
+```
+
+Comment:
+
+Between 2014 and 2020, the state with the largest change in suicide rate was Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate was New York, from 7.8 to 8.3.
+
+
+### Suicide rate by sex
+
+```{r, message=FALSE}
+total_sex_plot = suicide_df %>% 
+  group_by(sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = sex, y = suicide_100k, fill = sex )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 24, 4)) +
+  labs(
+    title = "National Suicide Rate, by Sex", 
+    x = "Sex", 
+    y = "Suicides per 100k")
+
+
+year_sex_plot = suicide_df %>% 
+  group_by(year, sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k, color = sex)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 30, 5)) +
+  labs(
+    title = "Suicide Trend Over Years, by Sex",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+grid.arrange(total_sex_plot, year_sex_plot, ncol = 2 )
+```
+
+Comment:
+Nationally, the overall suicide rate for males is about 4 times that of females. 
+For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
+From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
+
+
+### Suicide rate by age
+
+```{r, message=FALSE}
+total_age_plot = suicide_df %>% 
+  group_by(age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = age, y = suicide_100k, fill = age )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 20, 2)) +
+  labs(
+    title = "National Suicide Rate, by Age", 
+    x = "Age", 
+    y = "Suicides per 100k")
+
+
+year_age_plot = suicide_df %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 24, 2)) +
+  labs(
+    title = "Suicide Trend Over Years, by Age",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+grid.arrange(total_age_plot, year_age_plot, ncol = 2 )
+```
+
+Comment:
+Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
+From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
+The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
+
+### Suicide rate for females, by age group, 2000-2020
+
+```{r, message=FALSE}
+female_plot = suicide_df %>% 
+  filter(sex == "female") %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 12, 2)) +
+  labs(
+    title = "Suicide Trend  for Females by Age, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(female_plot)
+```
+
+**Comment:**
+
+* Recently (from 2018 to 2020), suicide rates decreased in females aged 25-44, 45-64, 65-74 and 75+, but increased for those aged 15-24 and kept constant for those aged 10-14.
+* Suicide rates were highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increased from 6.2 in 2000 to the highest 10.2 in 2015, and then declined to 7.9 in 2020.
+* Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
+* The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
+
+### Suicide rate for males, by age group, 2000-2020
+
+```{r, message=FALSE}
+male_plot =  suicide_df %>% 
+  filter(sex == "male") %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 45, 5)) +
+  labs(
+    title = "Suicide Trend  for Males by Age, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(male_plot)
+
+```
+
+**Comment:**
+
+* Recently (from 2018 to 2020), suicide rates decreased in males aged 45-64 and 65-74, but increased for those aged 10-14, 15-24, 25-44 and 75+.
+* Suicide rates were consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate declined from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increased to 40.5 in 2020.
+* Suicide rates were consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declined from 2.3 in 2000 to 1.2 in 2007, and then increased to 3.6 in 2020.
+* The suicide rates of those aged 10-14 were relatively stable between 2000 and 2020.
+
+### Suicide rate for females, by means of suicide, 2000-2020
+
+```{r, message=FALSE}
+female_means_plot = suicide_means_df %>% 
+  filter(sex == "female") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 2.5, 0.5)) +
+  labs(
+    title = "Female Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(female_means_plot)
+```
+
+**Comment**
+
+* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
+* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
+* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
+* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5). 
+
+### Suicide rate for males, by means of suicide, 2000-2020
+
+```{r, message=FALSE}
+male_means_plot = suicide_means_df %>% 
+  filter(sex == "male") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 16, 2)) +
+  labs(
+    title = "Male Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(male_means_plot)
+
+```
+
+**Comment**
+
+* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
+* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
+* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
+* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
+* For the same suicide means, the rates for males were generally higher than that of females. 
+
+
+
+## Regression Analyses
+
+```{r, message=FALSE}
+regression_df = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year == 2020) %>% 
+  select(worrx, deprx, age, sex, poverty, marst, cvddiag) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "_Male", 
+                        "2" = "_Female"),
+    marital_status = recode_factor(marst, 
+                        "10" = "_Married", "11" = "_Married","12" = "_Married","13" = "_Married",
+                        "20" = "_Widowed","30" = "_Divorced","40" = "_Separated",
+                        "50" = "_Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "_Less than 1.0", "12" = "_Less than 1.0", 
+                        "13" = "_Less than 1.0", "14" = "_Less than 1.0",
+                        "21" = "_1.0-2.0", "22" = "_1.0-2.0", 
+                        "23" = "_1.0-2.0", "24" = "_1.0-2.0", 
+                        "25" = "_1.0-2.0",
+                        "31" = "_2.0 and above","32" = "_2.0 and above",
+                        "33" = "_2.0 and above","34" = "_2.0 and above",
+                        "35" = "_2.0 and above","36" = "_2.0 and above",
+                        "37" = "_2.0 and above","38" = "_2.0 and above"),
+    worrx = ifelse(worrx>=3, NA, worrx),
+    deprx = ifelse(deprx>=3, NA, deprx),
+    worrx = recode_factor(worrx,
+                          '1' = 0, 
+                          '2' = 1),
+    deprx = recode_factor(deprx, '1' = 0, '2' = 1),
+    cvddiag = recode_factor(cvddiag, 
+                            "1" = "_Never had COVID-19", 
+                          "2" = "_Had COVID-19")
+    ) %>%
+  drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
+```
+
+### **Worries and anxiety**
+
+Whether taken medication for worried, nervous, or anxious feelings is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
+
+#### Mosaic Plot
+The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for worried, nervous, or anxious feelings) in the population. 
+
+Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for anxiety when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for anxiety in the population.
+
+```{r, message=FALSE}
+sex_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, sex),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+   y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+poverty_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, poverty),
+      fill = worrx
+    ),
+    offset = 0.01
+  )+ 
+  labs(
+    x="", 
+    y="",
+    fill = "Whether taken medicine for anxiety")+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+marital_status_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, marital_status),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+cvddiag_worrx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, cvddiag),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+  y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1),
+  )
+  
+sex_worrx + poverty_worrx + marital_status_worrx +cvddiag_worrx + plot_layout(ncol = 4)
+```
+
+#### Diagnostics
+We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. 
+
+* The crude model only has the outcome ( Whether taking medication for worried, nervous, or anxious feelings = Yes/No) and the predictor of interest (COVID-19 Status). 
+* The adjusted model has the outcome and predictor of interest (COVID-19 Status) along with other with four covariates (Sex, Age, Poverty(family income level),and Current Marital Status). 
+
+We can assess which of these two models fit the data better using the likelihood ratio test.  
+
+```{r, message=FALSE}
+anxiety_crude_model = 
+  glm(worrx ~ cvddiag, family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, message=FALSE}
+anxiety_adjusted_model = 
+  glm(worrx ~ sex + poverty + age + marital_status + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, include=FALSE, message=FALSE}
+summary(anxiety_adjusted_model)
+```
+
+
+```{r}
+lrtest(anxiety_crude_model, anxiety_adjusted_model) %>% 
+kbl(caption     = "Likelihood ratio test for crude model and adjusted model", col.names   = c("Total df for each model", "LogLik", "difference in df", "Chisq-statistic", "p-value")) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+* Goodness of Fit
+* Likelihood ratio test
+The resulting p-value is so small it’s very close to 0, so we can reject the null hypothesis. The p<0.00001 suggesting that the adjusted model with five covariates (Sex, Age, Poverty(family income level), Current Marital Status and COVID-19 Status) fits the data significantly better than the crude model.
+
+
+```{r, include=FALSE, message=FALSE}
+modelr::add_predictions(regression_df,anxiety_adjusted_model ) 
+```
+
+
+
+#### Results
+
+Since four of these main effects were categorical variables, so we need to create dummy variables that indicate which levels of the predictors a given individual belonged. The outcome for this logistic regression is binary (Whether taking medication for worried, nervous, or anxious feelings = Yes/No). 
+
+* The variable `Sex` has one dummy variable and `Sex_Male` is the reference group.
+* The variable `poverty` has two dummy variables and `poverty_less than 1.0` is the reference group.
+* The variable `marital_status` has four dummy variables and `marital_status_Married` is the reference group.
+* The variable `cvddiag(COVID-19 status)`has one dummy variable and `cvddiag_Had COVID-19` is the reference group. 
+
+```{r}
+anxiety_adjusted_model %>%  
+   broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         Lower_CI = exp(estimate -1.96*std.error),
+         Upper_CI = exp(estimate +1.96*std.error)) %>%
+  select(term, OR, Lower_CI, Upper_CI, statistic, p.value) %>% 
+  kbl(caption     = "Effect of Selected Predictors on whether taking medication for worried, nervous, or anxious feelings"
+    , col.names   = c("Predictors", "OR", "Lower bound of 95% CI","Upper bound of 95% CI", "t-statistic", "p-value"),
+    digits= 2) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.11 > α=0.05.
+Hence, we found no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.50). In addition, the findings in the statistical analysis matches what we get in the anxiety trend section of our exploratory analysis.
+Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness.
+
+
+### **Depression**
+
+Whether taken medication for depression is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
+
+#### Mosaic Plot
+The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for depression) in the population. 
+
+Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for depression when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for depression in the population.
+
+```{r, message=FALSE}
+sex_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, sex),
+      fill = deprx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+   y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+poverty_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, poverty),
+      fill = deprx
+    ),
+    offset = 0.01
+  )+ 
+  labs(
+    x="", 
+    y="",
+    fill = "Whether taken medicine for depression")+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+marital_status_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, marital_status),
+      fill = deprx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+cvddiag_deprx = 
+  regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(deprx, cvddiag),
+      fill = deprx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+  y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1),
+  )
+  
+sex_deprx + poverty_deprx + marital_status_deprx +cvddiag_deprx + plot_layout(ncol = 4)
+```
+
+
+
+#### Diagnostics
+We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. 
+
+* The crude model only has the outcome (Whether taking medication for depression = Yes/No) and the predictor of interest (COVID-19 Status). 
+* The adjusted model has the outcome and predictor of interest along with other with four covariates (Sex, Age, Poverty(family income level),and Current Marital Status). 
+
+We can assess which of these two models fit the data better using the likelihood ratio test.  
+
+```{r, message=FALSE}
+depre_crude_model = 
+  glm(deprx ~ cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, message=FALSE}
+depre_adjusted_model = 
+  glm(deprx ~ sex + poverty + age + marital_status + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, include=FALSE, message=FALSE}
+summary(anxiety_adjusted_model)
+```
+
+
+```{r}
+lrtest(depre_crude_model, depre_adjusted_model) %>% 
+  kbl(caption     = "Likelihood ratio test for crude model and adjusted model", col.names   = c("Total df for each model", "LogLik", "difference in df", "Chisq-statistic", "p-value")) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+* Goodness of Fit
+* Likelihood ratio test
+The resulting p-value is so small it’s very close to 0, so we can reject the null hypothesis. The p<0.00001 suggesting that the adjusted model with five covariates (Sex, Age, Poverty(family income level), Current Marital Status and COVID-19 Status) fits the data significantly better than the crude model.
+
+```{r, include=FALSE, message=FALSE}
+modelr::add_predictions(regression_df,depre_adjusted_model )
+
+```
+
+#### Results
+
+Since four of these main effects were categorical variables, so we need to create dummy variables that indicate which levels of the predictors a given individual belonged. The outcome for this logistic regression is binary (Whether taking medication for depression = Yes/No). 
+
+* The variable `Sex` has one dummy variable and `Sex_Male` is the reference group.
+* The variable `poverty` has two dummy variables and `poverty_less than 1.0` is the reference group.
+* The variable `marital_status` has four dummy variables and `marital_status_Married` is the reference group.
+* The variable `cvddiag(COVID-19 status)`has one dummy variable and `cvddiag_Had COVID-19` is the reference group. 
+
+```{r}
+depre_adjusted_model %>%  
+   broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         Lower_CI = exp(estimate -1.96*std.error),
+         Upper_CI = exp(estimate +1.96*std.error)) %>%
+  select(term, OR, Lower_CI, Upper_CI, statistic, p.value) %>% 
+  kbl(caption     = "Effect of Selected Predictors on whether taking medication for depression"
+    , col.names   = c("Predictors", "OR", "Lower bound of 95% CI","Upper bound of 95% CI", "t-statistic", "p-value"),
+    digits= 2) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.34 > α=0.05.
+Hence, we found no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.12, 95% CI: 0.89, 1.43). In addition, the findings in the statistical analysis matches what we get in the depression trend section of our exploratory analysis.
+Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness. 
