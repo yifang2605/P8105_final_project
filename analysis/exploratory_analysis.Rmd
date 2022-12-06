@@ -74,7 +74,7 @@ NHIS is a harmonized set of data covering more than 50 years (1963-present) of t
 Substance Abuse and Mental Health Services Administration (SAMHSA), Center for Behavioral Health Statistics and Quality, National Survey on Drug Use and Health (NSDUH), 2019 and 2020.
 
 **Centers for Disease Control and Prevention (CDC):**
-National Center for Injury Prevention and Control. Web-based Injury Statistics Query and Reporting System (WISQARS) (2014-2020).
+CDC WONDER online databases, deaths(2014-2020). Data were collected from the WONDER online databases under the category of the compressed mortality. 
 National Center for Health Statistics, National Vital Statistics System, Mortality. Data were retrieved using NVSS multiple cause-of-death mortality files for 2000 through 2020. Suicide deaths were identified using International Classification of Diseases, 10th Revision (ICD–10) underlying cause-of-death codes U03, X60–X84, and Y87.0. Means of suicide were identified using ICD–10 codes X72–X74 for firearm, X60–X69 for poisoning, and X70 for suffocation. “Other means” includes: Cut or pierce; Drowning; Falls; Fire or flame; Other land transport; Struck by or against; Other specified, classifiable injury; Other specified, not elsewhere classified injury; and Unspecified injury, as classified by ICD–10.
 
 
@@ -180,6 +180,59 @@ anx_dep =
                                '2' = "A little"),
     age = ifelse(age>=85, NA, age)
     )
+```
+
+### Suicide data
+
+
+
+### Import and tidy dataset
+
+```{r, message=FALSE}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+
+average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
+
+suicide_state_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 2,
+    range = "A1:D351",
+    skip = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  rename(
+     suicide_no = deaths,
+     suicide_100k = death_rate) %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000
+  )
+  
+suicide_means_df =
+   read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 3,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    firearm:others,
+    names_to = "means",
+    values_to = "rate"
+  ) %>% 
+  mutate(
+       sex = as.factor(sex),
+       means = as.factor(means)) 
+  
 ```
 
 
