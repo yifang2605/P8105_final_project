@@ -1,5 +1,5 @@
 ---
-title: "Anxiety Trend Dashboard"
+title: "Depression Trend Dashboard"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
