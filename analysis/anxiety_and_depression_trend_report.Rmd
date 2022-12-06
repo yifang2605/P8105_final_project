@@ -54,10 +54,10 @@ To analyze the trend of depression prevalence, frequency and level from 2015 to 
 
 Core demographic and social economic status indicators listed below are also included in this analysis:
 
-- AGE: individuals with age above 85 is excluded from analysis as 85 is the top code.
-- SEX: biological sex
-- MARST: current marital status
-- POVERTY: ratio of family income to poverty threshold
+- AGE: Individuals with age above 85 is excluded from analysis as 85 is the top code.
+- SEX: Biological sex
+- MARST: Current marital status
+- POVERTY: Ratio of family income to poverty threshold
 
 Responses indicate "unknown" or "not applied" are excluded from our analysis.
 
