@@ -196,7 +196,52 @@ To understand the distribution of suicides across states, we retrieved the suici
 * `suicide_100k`: suicide rate (suicide per 100k)
 * `means`: means of suicide, including firearm, poisoning, suffocation and others
 
+```{r, message=FALSE}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
 
+average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
+
+suicide_state_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 2,
+    range = "A1:D351",
+    skip = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  rename(
+     suicide_no = deaths,
+     suicide_100k = death_rate) %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000
+  )
+  
+suicide_means_df =
+   read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 3,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    firearm:others,
+    names_to = "means",
+    values_to = "rate"
+  ) %>% 
+  mutate(
+       sex = as.factor(sex),
+       means = as.factor(means)) 
+  
+```
 
 
 ## Mental Illness
@@ -774,58 +819,7 @@ anx_dep %>%
 ```
 
 
-
 ## Suicide Analysis
-
-
-### Import and tidy dataset
-
-```{r, message=FALSE}
-suicide_df = 
-  read_excel(
-    "./data/suicide_data.xlsx",
-    sheet = 1,
-    col_names = TRUE) %>% 
-  janitor::clean_names() %>% 
-  mutate(
-    population = (suicide_no / suicide_100k) * 100000, 
-    sex = as.factor(sex),
-    age = as.factor(age)
-  )
-
-average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
-
-suicide_state_df = 
-  read_excel(
-    "./data/suicide_data.xlsx",
-    sheet = 2,
-    range = "A1:D351",
-    skip = 1,
-    col_names = TRUE) %>% 
-  janitor::clean_names() %>% 
-  rename(
-     suicide_no = deaths,
-     suicide_100k = death_rate) %>% 
-  mutate(
-    population = (suicide_no / suicide_100k) * 100000
-  )
-  
-suicide_means_df =
-   read_excel(
-    "./data/suicide_data.xlsx",
-    sheet = 3,
-    col_names = TRUE) %>% 
-  janitor::clean_names() %>% 
-  pivot_longer(
-    firearm:others,
-    names_to = "means",
-    values_to = "rate"
-  ) %>% 
-  mutate(
-       sex = as.factor(sex),
-       means = as.factor(means)) 
-  
-```
 
 ### National trend of suicide rate, 2000-2020, (per 100K, per year)
 
