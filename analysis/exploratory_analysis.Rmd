@@ -5,8 +5,11 @@ output:
     code_folding: hide
     toc: true
     toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
 
+ 
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(viridis)
@@ -14,7 +17,13 @@ library(plotly)
 library(mgcv)
 library(modelr)
 library(ggmosaic)
+
+library(lmtest)
+library(performance)
+library(knitr)
+library(kableExtra)
 library(patchwork)
+
 
 library(usmap)
 library(gridExtra)
@@ -741,21 +750,25 @@ regression_df =
   read_csv("data/nhis_data01.csv") %>% 
   janitor::clean_names() %>% 
   filter(year == 2020) %>% 
-  select(worrx, deprx, age, sex, poverty, cvddiag) %>% 
+  select(worrx, deprx, age, sex, poverty, marst, cvddiag) %>% 
   mutate(
     sex = recode_factor(sex, 
                         "1" = "Male", 
-                        "2" = "Female"),
+                        "2" = "_Female"),
+    marital_status = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married","12" = "Married","13" = "Married",
+                        "20" = "_Widowed","30" = "_Divorced","40" = "_Separated",
+                        "50" = "_Never married"),
     poverty = recode_factor(poverty, 
                         "11" = "Less than 1.0", "12" = "Less than 1.0", 
                         "13" = "Less than 1.0", "14" = "Less than 1.0",
-                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
-                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
-                        "25" = "1.0-2.0",
-                        "31" = "2.0 and above","32" = "2.0 and above",
-                        "33" = "2.0 and above","34" = "2.0 and above",
-                        "35" = "2.0 and above","36" = "2.0 and above",
-                        "37" = "2.0 and above","38" = "2.0 and above"),
+                        "21" = "_1.0-2.0", "22" = "_1.0-2.0", 
+                        "23" = "_1.0-2.0", "24" = "_1.0-2.0", 
+                        "25" = "_1.0-2.0",
+                        "31" = "_2.0 and above","32" = "_2.0 and above",
+                        "33" = "_2.0 and above","34" = "_2.0 and above",
+                        "35" = "_2.0 and above","36" = "_2.0 and above",
+                        "37" = "_2.0 and above","38" = "_2.0 and above"),
     worrx = ifelse(worrx>=3, NA, worrx),
     deprx = ifelse(deprx>=3, NA, deprx),
     worrx = recode_factor(worrx,
@@ -764,15 +777,16 @@ regression_df =
     deprx = recode_factor(deprx, '1' = 0, '2' = 1),
     cvddiag = recode_factor(cvddiag, 
                             "1" = "Never had COVID-19", 
-                          "2" = "Had COVID-19")
+                          "2" = "_Had COVID-19")
     ) %>%
-  drop_na(worrx, deprx, sex, poverty, cvddiag)
+  drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
 ```
 
 ### Worries and anxiety
 
-whether taken medication for worried, nervous, or anxious feelings is associated with covid-19 adjusting for sex and family income level.
+**Whether taken medication for worried, nervous, or anxious feelings is associated with covid-19 adjusting for age, sex, family income level and current marital status.** 
 
+#### Mosaic Plot
 Mosaic Plot for included categorical variables:
 
 ```{r, message=FALSE}
@@ -842,31 +856,62 @@ cvddiag_worrx =
 sex_worrx + poverty_worrx + cvddiag_worrx + plot_layout(ncol = 3)
 ```
 
+#### Diagnostics
+We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. The crude model only has the outcome ( Whether taking medication for worried, nervous, or anxious feeings = Yes/No) and the predictor of interest (COVID-19 Status). The adjusted model has the outcome and predictor of interest along with other with four covariates (Sex, Age, Poverty(family income level),and Current Marital Status). We can assess which of these two models fit the data better using the likelihood ratio test.  
 
 ```{r, message=FALSE}
-anxiety_model = 
-  glm(worrx ~ sex + poverty + cvddiag, 
+anxiety_crude_model = 
+  glm(worrx ~ cvddiag, 
                             family=binomial(link='logit'),
                             data = regression_df)
 ```
 
-```{r}
-anxiety_model %>%  
-  broom::tidy(conf.int = TRUE) %>% 
-    mutate(
-      odds_ratio = exp(estimate),
-      low = exp(conf.low),
-      high = exp(conf.high)
-    ) %>% 
-    select(term, odds_ratio, low, high) %>% 
-  knitr::kable(digits=3)
+```{r, message=FALSE}
+anxiety_adjusted_model = 
+  glm(worrx ~ sex + poverty + age + marital_status + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
 ```
 
+```{r, include=FALSE, message=FALSE}
+summary(anxiety_adjusted_model)
+```
+
+Goodness of Fit
+```{r}
+lrtest(anxiety_crude_model, anxiety_adjusted_model)
+```
+Comment:The resulting p-value is so small it’s very close to 0, so we can reject the null hypothesis. The p<0.00001 suggesting that the adjusted model with five covariates (Sex, Age, Poverty(family income level), Current Marital Status and COVID-19 Status) fits the data significantly better than the crude model.
+
+```{r, include=FALSE, message=FALSE}
+modelr::add_predictions(regression_df,anxiety_adjusted_model )
+
+```
+
+#### Results
+
+```{r}
+anxiety_adjusted_model %>%  
+   broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         Lower_CI = exp(estimate -1.96*std.error),
+         Upper_CI = exp(estimate +1.96*std.error)) %>%
+  select(term, OR, Lower_CI, Upper_CI, statistic, p.value) %>% 
+  kbl(caption     = "Effect of Selected Predictors on whether taking medication for worried, nervous, or anxious feelings"
+    , col.names   = c("Predictors", "OR", "Lower bound of 95% CI","Upper bound of 95% CI", "t-statistic", "p-value"),
+    digits= 2) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+Comment: 
 
 
-### depression
+### Depression
 
-whether taken medication for depression is associated with covid-19 adjusting for sex and family income level.
+**Whether taken medication for depression is associated with covid-19 adjusting for age, sex, family income level and current marital status.**  
+
+#### Mosaic Plot
+Mosaic Plot for included categorical variables:
 
 ```{r, message=FALSE}
 sex_deprx = 
@@ -935,24 +980,55 @@ cvddiag_deprx =
 sex_deprx + poverty_deprx + cvddiag_deprx + plot_layout(ncol = 3)
 ```
 
+#### Diagnostics
+We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. The crude model only has the outcome (Whether taking medication for depression = Yes/No) and the predictor of interest (COVID-19 Status). The adjusted model has the outcome and predictor of interest along with other with four covariates (Sex, Age, Poverty(family income level),and Current Marital Status). We can assess which of these two models fit the data better using the likelihood ratio test.  
+
 ```{r, message=FALSE}
-depression_model = 
-  glm(deprx ~ sex + poverty + cvddiag, 
+depre_crude_model = 
+  glm(deprx ~ cvddiag, 
                             family=binomial(link='logit'),
                             data = regression_df)
 ```
 
-```{r}
-depression_model %>%  
-  broom::tidy(conf.int = TRUE) %>% 
-    mutate(
-      odds_ratio = exp(estimate),
-      low = exp(conf.low),
-      high = exp(conf.high)
-    ) %>% 
-    select(term, odds_ratio, low, high) %>% 
-  knitr::kable(digits=2)
+```{r, message=FALSE}
+depre_adjusted_model = 
+  glm(deprx ~ sex + poverty + age + marital_status + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
 ```
+
+```{r, include=FALSE, message=FALSE}
+summary(anxiety_adjusted_model)
+```
+
+Goodness of Fit
+```{r}
+lrtest(depre_crude_model, depre_adjusted_model)
+```
+Comment:The resulting p-value is so small it’s very close to 0, so we can reject the null hypothesis. The p<0.00001 suggesting that the adjusted model with five covariates (Sex, Age, Poverty(family income level), Current Marital Status and COVID-19 Status) fits the data significantly better than the crude model.
+
+```{r, include=FALSE, message=FALSE}
+modelr::add_predictions(regression_df,depre_adjusted_model )
+
+```
+
+#### Results
+
+```{r}
+depre_adjusted_model %>%  
+   broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         Lower_CI = exp(estimate -1.96*std.error),
+         Upper_CI = exp(estimate +1.96*std.error)) %>%
+  select(term, OR, Lower_CI, Upper_CI, statistic, p.value) %>% 
+  kbl(caption     = "Effect of Selected Predictors on whether taking medication for depression"
+    , col.names   = c("Predictors", "OR", "Lower bound of 95% CI","Upper bound of 95% CI", "t-statistic", "p-value"),
+    digits= 2) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+Comment: 
+
 
 ## Suicide Analysis
 
