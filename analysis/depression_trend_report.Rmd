@@ -232,7 +232,8 @@ anx_dep %>%
 As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
 
 ```{r, message=FALSE}
-anx_dep %>%
+age_plot = 
+  anx_dep %>%
   drop_na(age, deprx) %>% 
   ggplot(
     aes(x=age, group=deprx, fill=deprx)
@@ -242,6 +243,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for depression"
   )
+
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 ## Frequency of Depression

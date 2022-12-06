@@ -227,9 +227,10 @@ age_plot =
   facet_wrap(~year) +
   labs(
     fill = "Whether taken medicine for anxiety"
-  )
+  ) 
 
-ggplotly(age_plot)
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 Level and Frequency of Anxiety {data-orientation=columns}

@@ -221,7 +221,8 @@ age_plot =
     fill = "Whether taken medicine for depression"
   )
 
-ggplotly(age_plot)
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 Level and Frequency of Depression {data-orientation=columns}

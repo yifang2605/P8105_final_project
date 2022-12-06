@@ -188,8 +188,6 @@ To understand the distribution of suicides across states, we retrieved the suici
 
 * `year`: year, 2000-2020
 * `state`: U.S. state
-* `suicide_no`: number of suicide per 100,000 population
-* `suicide_100k`: suicide rate (suicide per 100k)
 * `sex`: sex group, including female and male
 * `age`: age group, including 10-14, 15-24, 25-44, 45-64, 65-74, 75+
 * `suicide_no`: number of suicide per 100,000 population
@@ -506,7 +504,8 @@ anx_dep %>%
 As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
 
 ```{r, message=FALSE}
-anx_dep %>%
+anxiety_age_plot = 
+  anx_dep %>%
   drop_na(age, worrx) %>% 
   ggplot(
     aes(x=age, group=worrx, fill=worrx)
@@ -516,6 +515,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for anxiety"
   )
+
+ggplotly(anxiety_age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 
@@ -746,7 +748,8 @@ anx_dep %>%
 As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
 
 ```{r, message=FALSE}
-anx_dep %>%
+depression_age_plot = 
+  anx_dep %>%
   drop_na(age, deprx) %>% 
   ggplot(
     aes(x=age, group=deprx, fill=deprx)
@@ -756,6 +759,9 @@ anx_dep %>%
   labs(
     fill = "Whether taken medicine for depression"
   )
+
+ggplotly(depression_age_plot) %>%
+  layout(legend = list(orientation = "h"))
 ```
 
 ### Frequency of depression
@@ -827,7 +833,7 @@ anx_dep %>%
   )
 ```
 
-## Conclusion
+### Conclusion
 
 - Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
 - From 2019 to 2020, there is no major change in the trend of depression. 
@@ -1159,14 +1165,55 @@ regression_df =
 
 Whether taken medication for worried, nervous, or anxious feelings is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
 
+
+```{r, message=FALSE}
+mosi_regression_df = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year == 2020) %>% 
+  select(worrx, deprx, age, sex, poverty, marst, cvddiag) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marital_status = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married","12" = "Married","13" = "Married",
+                        "20" = "Widowed","30" = "Divorced","40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    worrx = ifelse(worrx>=3, NA, worrx),
+    deprx = ifelse(deprx>=3, NA, deprx),
+    worrx = recode_factor(worrx,
+                          '1' = 'No', 
+                          '2' = 'Yes'),
+    deprx = recode_factor(deprx, '1' = 'No', '2' = 'Yes'),
+    cvddiag = recode_factor(cvddiag, 
+                            "1" = "Never had COVID-19", 
+                          "2" = "Had COVID-19")
+    ) %>%
+  drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
+```
+
 #### Mosaic Plot
 The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for worried, nervous, or anxious feelings) in the population. 
 
 Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for anxiety when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for anxiety in the population.
 
+
+In truth, when comparing male with female, we can observe the largest difference in the proportion of people who took medication for anxiety. It means that among those four variables, the variable sex has the largest difference in the proportion of people who took medication for anxiety.
+
 ```{r, message=FALSE}
 sex_worrx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1187,7 +1234,7 @@ sex_worrx =
   )
 
 poverty_worrx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1204,10 +1251,10 @@ poverty_worrx =
     axis.text.y = element_blank(),
     axis.ticks.y=element_blank(),
     axis.text.x = element_text(angle = 90, hjust = 1)
-  )
+  ) 
 
 marital_status_worrx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1228,7 +1275,7 @@ marital_status_worrx =
   )
 
 cvddiag_worrx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1330,9 +1377,11 @@ The Mosaic Plot included four categorical variables and it was used to visualize
 
 Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for depression when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for depression in the population.
 
+In truth, when comparing male with female, we can observe the largest difference in the proportion of people who took medication for depression. It means that among those four variables, the variable sex has the largest difference in the proportion of people who took medication for depression.
+
 ```{r, message=FALSE}
 sex_deprx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1353,7 +1402,7 @@ sex_deprx =
   )
 
 poverty_deprx = 
-  regression_df %>%
+ mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1373,7 +1422,7 @@ poverty_deprx =
   )
 
 marital_status_deprx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
@@ -1394,7 +1443,7 @@ marital_status_deprx =
   )
 
 cvddiag_deprx = 
-  regression_df %>%
+  mosi_regression_df %>%
   ggplot() + 
   geom_mosaic(
     aes(
