@@ -65,8 +65,7 @@ Mental health is an important part of overall health and well-being. Mental heal
 4.  What is the overall trend of the percentage, frequency and level of depression in the US across years?
 5.  How do trends in depression percentages differ by biological sex, household income, marital status, and age?
 6.  What is the overall suicide trend across years? How does suicide differ by state, age, sex and means?
-7.	What is the difference in suicide rate by state, age, gender, and means of suicide?
-8.  What is the association between taking depression or anxious medication and COVID-19 exposure? 
+7.  What is the association between taking depression or anxious medication and COVID-19 exposure? 
 
 
 ## Data Source
