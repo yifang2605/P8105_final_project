@@ -83,7 +83,7 @@ National Center for Health Statistics, National Vital Statistics System, Mortali
 
 ### Mental illness data
 
-To understand the distribution of mental illness across states, we retrieved the mental illness data from the National Survey on Drug Use and Health (NSDUH),2019-2020. We focused on adults reporting any mental illness and adults reporting serious mental illness from 2019 to 2020. Number of adults reporting any mental illness and serious mental illness were rounded to the nearest 1,000. Serious mental illness (SMI) is defined as having a diagnosable mental, behavioral, or emotional disorder, other than a developmental or substance use disorder, as assessed by the Mental Health Surveillance Study (MHSS) Structured Clinical Interview for the Diagnostic and Statistical Manual of Mental Disorders. Estimates of SMI are a subset of estimates of any mental illness (AMI) because SMI is limited to people with AMI that resulted in serious functional impairment. The dataset included the mental illness data for 50 states and Washiongton D.C. The variables we focused were: 
+To understand the distribution of mental illness across states, we retrieved the mental illness data from the National Survey on Drug Use and Health (NSDUH),2019-2020. We focused on adults reporting any mental illness and adults reporting serious mental illness from 2019 to 2020. Number of adults reporting any mental illness and serious mental illness were rounded to the nearest 1,000. Serious mental illness (SMI) is defined as having a diagnosable mental, behavioral, or emotional disorder, other than a developmental or substance use disorder, as assessed by the Mental Health Surveillance Study (MHSS) Structured Clinical Interview for the Diagnostic and Statistical Manual of Mental Disorders. Estimates of SMI are a subset of estimates of any mental illness (AMI) because SMI is limited to people with AMI that resulted in serious functional impairment. The dataset included the mental illness data for 50 states and Washington D.C. The variables we focused were: 
 
 * `state`: U.S. state
 * `any_mental_num`: number of adults reporting any mental illness
@@ -91,7 +91,7 @@ To understand the distribution of mental illness across states, we retrieved the
 * `ser_mental_num`: number of adults reporting serious mental illness
 * `ser_mental_per`: percent of adults reporting serious mental illness
 * `state_abb`: abbreviation of states
-* `region`: state regions, including northeast, midwest, south and west
+* `region`: state regions, including northeast, south, west and north central
 
 ```{r, message=FALSE}
 mental_df = 
@@ -246,9 +246,9 @@ suicide_means_df =
 
 ### Mental Illness
 
-#### Map: Percent of adults reporting any mental illness  by state between 2019-2020
+#### Map for percent of adults reporting any mental illness, by state between 2019-2020
 
-According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overal, with variations between states. 
+According to the mental health data collected between 2019 -2020, the mental illness percents are high in the US overall, with variations between states. Among them, Utah has the highest rate of mental illness, 29.7%; Florida has the lowest rate of mental illness, 17.5%.
 
 ```{r, message=FALSE} 
 state_mental=
@@ -271,9 +271,9 @@ ggplotly(state_mental)
   
 ```
 
-#### Any/Serious Mental illness numbers (million), by region, 2019-2020
+#### Any/Serious Mental illness numbers (million), by region between 2019-2020
 
-Both any mental illness and serious mental illness are highest in the South, lowest in the northeast. 
+Both any mental illness and serious mental illness are highest in the South, lowest in the Northeast. And the number of mental illness in the South is more than twice that of the Northeast. 
 
 ```{r, message=FALSE}
 any_mental_plot = 
@@ -312,7 +312,7 @@ grid.arrange(any_mental_plot, ser_mental_plot, ncol =2)
 
 #### Any/Serious Mental illness percent, Top 10 states, 2019-2020
 
-The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Ultah has the highest any/serious mental illness percent. 
+The top 10 states for any and serious mental illness are 8/10 the same, except Washington, Rhode Island, Arkansas and Indiana. Utah has the highest any/serious mental illness percent. 
 
 ```{r, message=FALSE}
 any_top10_plot =
@@ -854,7 +854,7 @@ anx_dep %>%
 
 #### National trend of suicide rate, 2000-2020, (per 100K, per year)
 
-The US national suicide rates increased from 2000 to 2018, then declined from 2018 to 2020. The average suicide rate from 2000 to 2020 was 14.2 per 100,000 (represented with red dot line).
+The US national suicide rates increase from 2000 to 2018, then decline from 2018 to 2020. The average suicide rate from 2000 to 2020 is 14.2 per 100,000 (represented with red dot line).
 
 ```{r, message=FALSE}
 suicide_plot = suicide_df %>% 
@@ -881,8 +881,8 @@ ggplotly(suicide_plot)
 
 #### Cumulative suicide rate for each state, 2014-2020
 
-Wyoming had the highest suicide rate and New Jersey had the lowest suicide rate from 2014-2020.
-The top 5 states with high cumulative suicide rates were Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates were New Jersey, New York, Massachusetts, Maryland and Connecticut.
+Wyoming has the highest suicide rate and New Jersey has the lowest suicide rate from 2014-2020.
+The top 5 states with high cumulative suicide rates are Wyoming, Alaska, Montana, New Mexico, and Idaho; the top 5 states with low cumulative suicide rates are New Jersey, New York, Massachusetts, Maryland and Connecticut.
 
 ```{r, message=FALSE}
 suicide_state_df %>% 
@@ -909,7 +909,7 @@ suicide_state_df %>%
 
 #### Suicide rate for each state over years, 2014-2020
 
-Between 2014 and 2020, the state with the largest change in suicide rate was Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate was New York, from 7.8 to 8.3.
+Between 2014 and 2020, the state with the largest change in suicide rate is Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate is New York, from 7.8 to 8.3.
 
 ```{r, message=FALSE}
 suicide_state_df %>% 
@@ -927,9 +927,7 @@ suicide_state_df %>%
 
 #### Suicide rate by sex
 
-Nationally, the overall suicide rate for males is about 4 times that of females. 
-For females, suicide rates peaked in 2018 and declined since then; for males, suicide rates peaked in 2017 and declined since then. 
-From year 2000 to 2020, the male suicide rate remained apparently higher than the female suicide rate, and the ratio was constantly about 4:1.
+Nationally, the overall suicide rate for males is about 4 times that of females. For females, suicide rates peak in 2018 and decline since then; for males, suicide rates peake in 2017 and decline since then. From year 2000 to 2020, the male suicide rate remains apparently higher than the female suicide rate, and the ratio is constantly about 4:1.
 
 ```{r, message=FALSE}
 total_sex_plot = suicide_df %>% 
@@ -971,9 +969,7 @@ grid.arrange(total_sex_plot, year_sex_plot, ncol = 2 )
 
 #### Suicide rate by age
 
-Nationally, aged 45-64 had the highest suicide rate, second highest group was aged 75+. The 10-14 aged group had the lowest suicide rate. 
-From year 2000 to 2020, the suicide rate of group aged 10-14 remained roughly static and small. Suicide rates in all other age groups showed an overall upward trend. Among them, the group aged 25-44 had the largest change, roughly from 10 to 18 suicide rate per 100k.
-The suicide rates of those aged 45-64 and aged 65-74 started to drop since 2018.
+Nationally, aged 45-64 had the highest suicide rate, second highest group is aged 75+. The 10-14 aged group has the lowest suicide rate. From year 2000 to 2020, the suicide rate of group aged 10-14 remains roughly static and small. Suicide rates in all other age groups show an overall upward trend. Among them, the group aged 25-44 has the largest change, roughly from 10 to 18 suicide rate per 100k. The suicide rates of those aged 45-64 and aged 65-74 start to drop since 2018.
 
 ```{r, message=FALSE}
 total_age_plot = suicide_df %>% 
@@ -1015,10 +1011,7 @@ grid.arrange(total_age_plot, year_age_plot, ncol = 2 )
 
 ##### Suicide rate for females, by age group, 2000-2020
 
-* Recently (from 2018 to 2020), suicide rates decreased in females aged 25-44, 45-64, 65-74 and 75+, but increased for those aged 15-24 and kept constant for those aged 10-14.
-* Suicide rates were highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increased from 6.2 in 2000 to the highest 10.2 in 2015, and then declined to 7.9 in 2020.
-* Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
-* The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
+Recently (from 2018 to 2020), suicide rates decrease in females aged 25-44, 45-64, 65-74 and 75+, but increase for those aged 15-24 and keep constant for those aged 10-14. Suicide rates are highest for those females aged 45-64 over the period of 2000-2020. The suicide rate increase from 6.2 in 2000 to the highest 10.2 in 2015, and then decline to 7.9 in 2020. Suicide rates are consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increase from 0.6 in 2000 to the highest 2.0 in 2018, and then keep constant through 2020.But the rate more than triples from 0.6 (2000) to 2.0 (2020). The suicide rates of those aged 75+ are relatively stable between 2000 and 2020.
 
 ```{r, message=FALSE}
 female_plot = suicide_df %>% 
@@ -1044,10 +1037,7 @@ ggplotly(female_plot)
 
 #### Suicide rate for males, by age group, 2000-2020
 
-* Recently (from 2018 to 2020), suicide rates decreased in males aged 45-64 and 65-74, but increased for those aged 10-14, 15-24, 25-44 and 75+.
-* Suicide rates were consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate declined from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increased to 40.5 in 2020.
-* Suicide rates were consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declined from 2.3 in 2000 to 1.2 in 2007, and then increased to 3.6 in 2020.
-* The suicide rates of those aged 10-14 were relatively stable between 2000 and 2020.
+Recently (from 2018 to 2020), suicide rates decrease in males aged 45-64 and 65-74, but increase for those aged 10-14, 15-24, 25-44 and 75+. Suicide rates are consistently highest for those males aged 75+ over the period of 2000-2020. The suicide rate decline from highest 42.4 in 2000 to the lowest 35.6 in 2009, and then increase to 40.5 in 2020. Suicide rates are consistently lowest for those males aged 10-14 over the period of 2000-2020. The suicide rate declines from 2.3 in 2000 to 1.2 in 2007, and then increase to 3.6 in 2020. The suicide rates of those aged 10-14 are relatively stable between 2000 and 2020.
 
 ```{r, message=FALSE}
 male_plot =  suicide_df %>% 
@@ -1075,10 +1065,7 @@ ggplotly(male_plot)
 
 #### Suicide rate for females, by means of suicide, 2000-2020
 
-* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
-* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
-* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
-* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5).
+For females, the rates for firearm-related suicide increase from 1.4 in 2008 to 1.9 in 2016 and remain stable through 2020. Suicides by firearm become the leading means for females in 2020. The rates for poisoning-related suicide increase from 1.4 in 2000 to 2.0 in 2015 and decline to 1.5 in 2020. Before 2016, poisoning-related suicides are the leading means for females. The rate for suffocation-related suicides dramatically increase from 0.7 in 2000 to 1.9 in 2018, and then decline slightly to 1.7 in 2020. Overall, the rates are more than doubled over the study period. During the study period, differences in rates for suicide by firearm, poisoning and suffocation decline. In 2020, females have the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5).
 
 ```{r, message=FALSE}
 female_means_plot = suicide_means_df %>% 
@@ -1099,11 +1086,7 @@ ggplotly(female_means_plot)
 
 #### Suicide rate for males, by means of suicide, 2000-2020
 
-* For males, the rate for firearm-related suicide declined from 11.0 in 2000 to 10.3 in 2006 and then increased to 12.5 in 2020. The rate for firearm-related suicide was much higher than that for all other suicide means (poisoning, suffocation and others). 
-* Overall, the rate for poisoning-related suicide declined from 2.1 in 2000 to 1.7 in 2020. And the rate remained in a relatively low level. 
-* The rate for suffocation-related suicide increased from 3.4 in 2000 to 6.7 in 2018, and then declined to 6.1 in 2020. Overall, the rate was almost doubled during the study period.
-* During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrowed, but the difference in rates for suffocation-related suicide and poisoning-related suicide widened. 
-* For the same suicide means, the rates for males were generally higher than that of females.
+For males, the rates for firearm-related suicide decline from 11.0 in 2000 to 10.3 in 2006 and then increase to 12.5 in 2020. The rates for firearm-related suicide are much higher than that for all other suicide means (poisoning, suffocation and others). Overall, the rates for poisoning-related suicide decline from 2.1 in 2000 to 1.7 in 2020. And the rates remain in a relatively low level. The rate for suffocation-related suicides increase from 3.4 in 2000 to 6.7 in 2018, and then decline to 6.1 in 2020. Overall, the rates are almost doubled during the study period. During the study period, the difference in rates for firearm-related suicide and suffocation-related suicide narrows, but the difference in rates for suffocation-related suicide and poisoning-related suicide widens. For the same suicide means, the rates for males are generally higher than that of females.
 
 ```{r, message=FALSE}
 male_means_plot = suicide_means_df %>% 
