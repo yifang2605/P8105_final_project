@@ -111,6 +111,7 @@ anx_dep %>%
     text = ~text_label
   ) %>% 
   layout(
+    title = "Percentage of people reported taken medication for anxiety",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     showlegend = FALSE
@@ -151,6 +152,7 @@ anx_dep %>%
     mode='lines+markers'
   ) %>% 
   layout(
+    title = "Percentage of people reported taken medication for anxiety, by biological sex",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     legend = list(orientation = 'h')
@@ -187,6 +189,7 @@ anx_dep %>%
     text = ~text_label
   ) %>% 
   layout(
+    title = "Percentage of people reported taken medication for anxiety, by household income",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     legend = list(orientation = 'h')
@@ -221,6 +224,7 @@ anx_dep %>%
     text = ~text_label
   ) %>% 
   layout(
+    title = "Percentage of people reported taken medication for anxiety, by martial status",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"),
     legend = list(orientation = 'h')
@@ -241,6 +245,7 @@ age_plot =
   geom_density(alpha=0.4) +
   facet_wrap(~year) +
   labs(
+    title = "Age distribution of whether reported taken medication for anxiety",
     fill = "Whether taken medicine for anxiety"
   )
 
@@ -276,6 +281,7 @@ anx_dep %>%
     text = ~text_label
   ) %>% 
   layout(
+    title = "Frequency of anxiety",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"), 
     barmode = 'stack',
@@ -310,6 +316,7 @@ anx_dep %>%
     text = ~text_label
   ) %>% 
   layout(
+    title = "Level of anxiety",
     xaxis = list (title = ""),
     yaxis = list (title = "Percentage"), 
     barmode = 'stack',
