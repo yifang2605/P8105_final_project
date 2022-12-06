@@ -1238,7 +1238,24 @@ ggplotly(female_means_plot)
 * The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
 * During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5). 
 
+### Suicide rate for males, by means of suicide, 2000-2020
 
+```{r}
+male_means_plot = suicide_means_df %>% 
+  filter(sex == "male") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 16, 2)) +
+  labs(
+    title = "Male Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(male_means_plot)
+
+```
 
 
 
