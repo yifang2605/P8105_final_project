@@ -1181,7 +1181,30 @@ ggplotly(female_plot)
 * Suicide rates were consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rate increased from 0.6 in 2000 to the highest 2.0 in 2018, and then kept constant through 2020.But the rate more than tripled from 0.6 (2000) to 2.0 (2020).
 * The suicide rates of those aged 75+ were relatively stable between 2000 and 2020.
 
+### Suicide rate for males, by age group, 2000-2020
 
+```{r}
+male_plot =  suicide_df %>% 
+  filter(sex == "male") %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 45, 5)) +
+  labs(
+    title = "Suicide Trend  for Males by Age, 2000-2020",
+    x = "Year",
+    y = "Suicide per 100k"
+  )
+
+ggplotly(male_plot)
+
+```
 
 
 
