@@ -1230,3 +1230,15 @@ female_means_plot = suicide_means_df %>%
 
 ggplotly(female_means_plot)
 ```
+
+**Comment**
+
+* For females, the rate for firearm-related suicide increased from 1.4 in 2008 to 1.9 in 2016 and remained stable through 2020. Suicide by firearm became the leading means for females in 2020.
+* The rate for poisoning-related suicide increased from 1.4 in 2000 to 2.0 in 2015 and declined to 1.5 in 2020. Before 2016, poisoning-related suicide was the leading means for females.
+* The rate for suffocation-related suicide dramatically increased from 0.7 in 2000 to 1.9 in 2018, and then declined slightly to 1.7 in 2020. Overall, the rate was more than doubled over the study period. 
+* During the study period, differences in rates for suicide by firearm, poisoning and suffocation declined. In 2020, females had the highest rate for firearm suicide (1.8), followed by suffocation (1.7) and poisoning (1.5). 
+
+
+
+
+
