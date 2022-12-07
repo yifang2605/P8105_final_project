@@ -595,7 +595,7 @@ anx_dep %>%
   )
 ```
 
-#### Conclusion
+#### Summary
 
 - Contrary to our expectation, the association between COVID-19 and anxiety may not be significant from the plots. 
 - There is no major change in the trend of anxiety from 2019 to 2020. 
@@ -845,7 +845,7 @@ anx_dep %>%
   )
 ```
 
-#### Conclusion
+#### Summary
 
 - Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
 - From 2019 to 2020, there is no major change in the trend of depression. 
@@ -1108,7 +1108,7 @@ ggplotly(male_means_plot)
 ```
 
 
-#### Conclusion
+#### Summary
 
 - The US national suicide rates increase from 2000 to 2018, then decline from 2018 to 2020.
 - The suicide rates are high in the US overall, with variations between states and over years. Wyoming has the highest suicide rate and New Jersey has the lowest suicide rate from 2014-2020.
