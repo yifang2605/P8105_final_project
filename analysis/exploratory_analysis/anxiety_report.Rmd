@@ -1,0 +1,335 @@
+---
+title: "Anxiety"
+output: 
+  html_document:
+    theme: journal
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+```{r, message=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+```{r, message=FALSE}
+anx_dep = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year>=2015) %>% 
+  select(year, worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl, age, sex, marst, poverty) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marst = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married", "12" = "Married", "13" = "Married",
+                        "20" = "Widowed",
+                        "30" = "Divorced",
+                        "40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    worrx = recode_factor(worrx,
+                          '1' = "no", 
+                          '2' = "yes"),
+    worfreq = recode_factor(worfreq, 
+                            '1' = "Daily", 
+                            '2' = "Weekly", 
+                            '3' = "Monthly", 
+                            '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, 
+                               '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    ) 
+```
+
+
+## Percentage of People Reported Taken Medication for Worried, Nervous, or Anxious Feelings
+According to the plot, from 2015 to 2021, the percentage of people who report taking medication for worry, stress or anxiety is constantly increasing from 9.13% in 2015 to 13.57% in 2021. We can observe a rapid increase from 2017 to 2019 and, contrary to our expectations, a relatively slow increase from 2019 to 2020. The effect of COVID-19 on anxiety percentage is not evident in this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(worrx) %>% 
+  group_by(year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for anxiety",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    showlegend = FALSE
+  ) %>% 
+  hide_colorbar()
+```
+
+###  Stratify by Biological Sex
+Stratify the reported percentage of people taking medication for worried, nervous, or anxious feelings by biological sex, we can observe a much higher percentage among females than males. There is also a faster increase in the percentage among females from 14.41% in 2018 to 16.52% in 2019. Among males, the percentage is relatively stable from 2018 to 2020, while there is an increase from 2020 to 2021. Considering the fact that COVID-19 is prevalent in the United States starting in 2020, the effect of COVID-19 on anxiety percentage is not evident for either sex.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(sex, worrx) %>% 
+  group_by(sex, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~sex,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  add_trace(
+    x = ~year,
+    y = ~wor_percentage,
+    color = ~sex,
+    type='scatter',
+    mode='lines+markers'
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for anxiety, by biological sex",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+
+```
+
+### Stratify by Ratio of Family Income to Poverty Threshold
+
+Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest income stratum decreased rapidly from 17.30% in 2017 to 15.84% in 2018, which is the opposite of what happened in the other two strata. Although the percentage of the lowest income stratum decreased rapidly from 2017 to 2018, they still had the highest percentage of the three strata, and this decrease was followed by a rapid increase from 15.84% in 2018 to 18.58% in 2019. From 2020 to 2021, the percentage decreases for the other two strata, while for the highest-income stratum, the percentage steadily increases. Although household income appears to have an effect on anxiety, the effect of COVID-19 on anxiety is not evident for all three strata.
+
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(poverty, worrx) %>% 
+  group_by(poverty, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~poverty,
+    type = "scatter", 
+    mode = "lines+markers",
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for anxiety, by household income",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+  
+```
+
+### Stratify by Current Martial Status
+Stratify the percentage of people reported taken medication for worried, nervous, or anxious feelings by current martial status, we can observe a rapid increase from 14.31% in 2019 to 17.49% in 2020 in those separated. Considering the timing, this could be an effect of COVID-19.For other strata, the effect of COVID-19 is not obvious.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(marst, worrx) %>% 
+  group_by(marst, year, worrx) %>% 
+  summarize(wor_num = n()) %>% 
+  pivot_wider(
+    names_from = worrx,
+    values_from = wor_num
+  ) %>% 
+  mutate(
+    wor_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~wor_percentage,
+    x = ~year,
+    color = ~marst,
+    type = "scatter",
+    mode='lines+markers',
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for anxiety, by martial status",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+```
+
+## Age Distribution
+
+As we can see from the plot, the age distribution of people taking medication for worried, nervous, or anxious feelings did not change much from 2015 to 2021. The effect of COVID-19 was not evident in this plot.
+
+```{r}
+age_plot = 
+  anx_dep %>%
+  drop_na(age, worrx) %>% 
+  ggplot(
+    aes(x=age, group=worrx, fill=worrx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    title = "Age distribution of whether reported taken medication for anxiety",
+    fill = "Whether taken medicine for anxiety"
+  )
+
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
+```
+
+## Frequency of Worried, Nervous, Or Anxious Feelings
+
+From this bar plot about how often people feel worried, nervous, or anxious, we can observe that the frequency is steadily increasing from 2015 to 2021. There is also a rapid increase from 2019 to 2020, which could be COVID-19 related.
+
+```{r, message=FALSE}
+anx_dep %>% 
+  drop_na(worfreq) %>% 
+  group_by(year, worfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfreq = worfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Frequency of anxiety",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+## Level of Worried, Nervous, Or Anxious Feelings
+From this bar plot about the level of worried, nervous, or anxious feelings people felt last time, we can observe a relatively large increase from 2018 to 2019 in the percentage of people who felt worried, stressed, or anxious a lot or between a little and a lot. However, the distribution did not change much from 2019 to 2020, which indicates that the impact of COVID-19 on level of anxiety may not be significant.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(worfeelevl) %>% 
+  group_by(year, worfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     worfeelevl = worfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~worfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Level of anxiety",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+## Conclusion
+
+- Contrary to our expectation, the association between COVID-19 and anxiety may not be significant from the plots. 
+- There is no major change in the trend of anxiety from 2019 to 2020. 
+- The increase in anxiety actually occurred prior to the COVID-19 period. 
+- Other factors such as biological sex and household income seem to have an greater impact on anxiety.
+
+

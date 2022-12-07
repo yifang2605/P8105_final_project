@@ -1,0 +1,332 @@
+---
+title: "Depression"
+output: 
+  html_document:
+    theme: journal
+    code_folding: hide
+    toc: true
+    toc_float: true
+---
+
+```{r, message=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+```{r, message=FALSE}
+anx_dep = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year>=2015) %>% 
+  select(year, worrx, worfreq, worfeelevl, deprx, depfreq, depfeelevl, age, sex, marst, poverty) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marst = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married", "12" = "Married", "13" = "Married",
+                        "20" = "Widowed",
+                        "30" = "Divorced",
+                        "40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    worrx = recode_factor(worrx,
+                          '1' = "no", 
+                          '2' = "yes"),
+    worfreq = recode_factor(worfreq, 
+                            '1' = "Daily", 
+                            '2' = "Weekly", 
+                            '3' = "Monthly", 
+                            '4' = "A few times a year", 
+                            '5' = "Never"),
+    worfeelevl = recode_factor(worfeelevl, 
+                               '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    deprx = recode_factor(deprx, '1' = "no", '2' = "yes"),
+    depfreq = recode_factor(depfreq, '1' = "Daily", '2' = "Weekly", 
+                            '3' = "Monthly", '4' = "A few times a year", 
+                            '5' = "Never"),
+    depfeelevl = recode_factor(depfeelevl, '1' = "A lot", 
+                               '3' = "Somewhere between a little and a lot", 
+                               '2' = "A little"),
+    age = ifelse(age>=85, NA, age)
+    ) 
+```
+
+## Percentage of People Reported Taken Medication for Depression
+According to the plot, the proportion of people reported taken medication for depression increased from 8.75% in 2015 to 11.42% in 2020, followed by a slight decrease from 2020 to 2021. COVID-19 appears to have a limited impact on depression percentage.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(deprx) %>% 
+  group_by(year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~year,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for depression",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    showlegend = FALSE
+  ) %>% 
+  hide_colorbar()
+```
+
+###  Stratify by Biological Sex
+
+Stratify the reported percentage of people taking medication for depression by biological sex, we can observe a much higher percentage among females than males. There are also a faster increase in the percentage among females from 12.68% in 2017 to 15.14% in 2020 and a decrease from 15.14% in 2020 to 14.52% in 2021. Contrary to females, the percentage slightly decreased from 2018 to 2019 and then increased from 2020 to 2021 among males. The effect of COVID-19 is not evident fro either sex from this plot.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(sex, deprx) %>% 
+  group_by(sex, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~sex,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  add_trace(
+    x = ~year,
+    y = ~dep_percentage,
+    color = ~sex,
+    type='scatter',
+    mode='lines+markers'
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for depression, by biological sex",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+
+```
+
+### Stratify by Ratio of Family Income to Poverty Threshold
+
+Stratify the percentage of people reported taken medication for depression by the ratio of household income to the poverty line, we can clearly see that the lower the household income, the higher their percentage. The percentage among the lowest-income stratum decreased from 17.41% in 2017 to 16.53% in 2018, which is the opposite of what happened in the other two strata. The change in the percentage is quite stable from 2018 to 2019 among all three strata. There is a rapid increase from 17.02% in 2019 to 18.66% in 2020, which may indicate that people belonging to the lowest-income stratum are affected by COVID-19 related depression. For other two strata, the effect of COVID-19 is not evident.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(poverty, deprx) %>% 
+  group_by(poverty, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~poverty,
+    type = "scatter", 
+    mode = "lines+markers",
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for depression, by household income",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+  
+```
+
+### Stratify by Current Martial Status
+Stratify the percentage of people reported taken medication for depression by current martial status, we can observe a rapid decrease from 17.26% in 2016 to 13.12% in 2019 among separated, while this downward trend slows from 2018 to 2019 and reverses from 2019 to 2020. This reversal may be associated with COVID-19. The trends are similar for married and never married, divorced and widowed. The effect of COVID-19 is not evident for these three strata.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(marst, deprx) %>% 
+  group_by(marst, year, deprx) %>% 
+  summarize(dep_num = n()) %>% 
+  pivot_wider(
+    names_from = deprx,
+    values_from = dep_num
+  ) %>% 
+  mutate(
+    dep_percentage = yes/(no + yes)*100,
+    text_label = str_c(yes, " out of ", no + yes)
+  ) %>% 
+  ungroup() %>% 
+  plot_ly(
+    y = ~dep_percentage,
+    x = ~year,
+    color = ~marst,
+    type = "scatter",
+    mode='lines+markers',
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Percentage of people reported taken medication for depression, by martial status",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"),
+    legend = list(orientation = 'h')
+  )
+```
+
+## Age Distribution
+
+As we can see from the graph, people in their 60s tend to have a higher incidence of depression. However, the age distribution of people taking medication for depression did not change much from 2015 to 2021. The effect of COVID-19 is not evident in this plot.
+
+```{r, message=FALSE}
+age_plot = 
+  anx_dep %>%
+  drop_na(age, deprx) %>% 
+  ggplot(
+    aes(x=age, group=deprx, fill=deprx)
+  ) +
+  geom_density(alpha=0.4) +
+  facet_wrap(~year) +
+  labs(
+    title = "Age distribution of whether reported taken medication for depression",
+    fill = "Whether taken medicine for depression"
+  )
+
+ggplotly(age_plot) %>%
+  layout(legend = list(orientation = "h"))
+```
+
+## Frequency of Depression
+
+From this bar plot about how often people feel depressed, we can observe that the frequency is quite stable and there is no clear evidence of the effect of COVID-19 on the frequency of depression.
+
+```{r, message=FALSE}
+anx_dep %>% 
+  drop_na(depfreq) %>% 
+  group_by(year, depfreq) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfreq = depfreq,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfreq,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Frequency of depression",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+## Level of Depression
+From this bar plot about the level of depression last time, we can see that the percentage of people who felt "a lot" or "between a little and a lot depression" is stable over the time period and a decrease of percentage of people feel "a lot depression" from 2018 to 2019. There is also no clear evidence of the effect of COVID-19 on the level of depression.
+
+```{r, message=FALSE}
+anx_dep %>%
+  drop_na(depfeelevl) %>% 
+  group_by(year, depfeelevl) %>% 
+  summarize(count = n()) %>% 
+  group_by(year) %>% 
+  summarize(
+     percentage=100 * count/sum(count),
+     sum_count = sum(count),
+     depfeelevl = depfeelevl,
+     count=count
+  ) %>% 
+  mutate(
+    text_label = str_c(count, " out of ", sum_count)
+  ) %>% 
+  plot_ly(
+    y = ~percentage,
+    x = ~year,
+    color = ~depfeelevl,
+    type = "bar", 
+    colors = "viridis",
+    text = ~text_label
+  ) %>% 
+  layout(
+    title = "Level of depression",
+    xaxis = list (title = ""),
+    yaxis = list (title = "Percentage"), 
+    barmode = 'stack',
+    legend = list(orientation = 'h')
+  )
+```
+
+## Conclusion
+
+- Contrary to our expectation, the association between COVID-19 and depression may not be significant from the plots. 
+- From 2019 to 2020, there is no major change in the trend of depression. 
+- Other factors such as biological sex and household income seem to have an greater impact on depression.
