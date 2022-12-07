@@ -1643,12 +1643,9 @@ sui_reg %>%
   column_spec(1, bold = T)
 ```
 
-<<<<<<< HEAD
 According to the table, all the p-values are quite close to 0, so our regression indicates that each predictor(`Year`, `Sex`, `Age`) and the interaction term (`Sex*Age`) have the statistically significant relationship with the suicide rates.
 
 The estimate for predictor `Year` is 0.17, which means that When one year increases, the suicide rate will also increase 0.17, assuming all other variables stay constant. This finding is not totally consistent with the summary described in our previous visualization process, probably because the suicide rate trend ripple is not enough obvious or the variable `Year` is affected by other unknown variables. 
 
 The estimate for predictor `Sexmale` is 1.10, which means that When sex changes from male to female, the value of the suicide rate will increase 1.10, assuming all other variables stay constant. Among all the females, the predictor `Age45-64` has the largest value of the estimate, showing that the age group 45-64 has the higher suicide rates than all other age groups. Among all the males, we need to combine the estimates with age groups and the interaction terms, and obtain that the age group 75+ has the higher suicide rates than all other age groups. And these findings match with our summary from the foregoing descriptive analyses.
 
-=======
->>>>>>> b2b3dcc0fc02b83a42c098bdb95f4089d736db64
