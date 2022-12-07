@@ -1,0 +1,279 @@
+---
+title: "Suicide Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source: embed
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(dplyr)
+library(readxl)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+```{r, message=FALSE}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+
+average_20years = sum(suicide_df$suicide_no) / sum(suicide_df$population) * 100000
+
+suicide_state_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 2,
+    range = "A1:D351",
+    skip = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  rename(
+     suicide_no = deaths,
+     suicide_100k = death_rate) %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000
+  )
+  
+suicide_means_df =
+   read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 3,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    firearm:others,
+    names_to = "means",
+    values_to = "rate"
+  ) %>% 
+  mutate(
+       sex = as.factor(sex),
+       means = as.factor(means)) 
+  
+```
+
+
+Overall suicide
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### US National Suicide Rate, 2000-2020
+```{r, message=FALSE}
+suicide_plot = suicide_df %>% 
+  group_by(year) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  ggplot(aes(x = year, y = suicide_100k)) +
+  geom_line(col = "deepskyblue", size = 1) +
+  geom_point(col = "deepskyblue", size = 2) +
+  geom_hline(
+    yintercept = average_20years, linetype = 2, color = "red", size = 1) +
+  scale_x_continuous(breaks = seq(2000, 2020, 5)) + 
+  scale_y_continuous(breaks = seq(8, 18, 1)) +
+  labs(title = "US National Suicide Rate (per 100K), 2000-2020",
+       x = "Year", 
+       y = "Suicides per 100k") 
+
+ggplotly(suicide_plot)
+   
+```
+
+Column {data-width=500}
+-------------------------------------
+### By state
+```{r, message=FALSE}
+state_plot = suicide_state_df %>% 
+  group_by(state) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>%
+  mutate(
+    state = fct_reorder(state, suicide_100k)) %>% 
+  ggplot(aes(x = suicide_100k, y = state, fill = state )) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = seq(0, 30, 2)) +
+  labs(
+    title = "Cumulative Suicide Rate, by State, 2014-2020", 
+    x = "Suicides per 100k", 
+    y = "State") +
+  theme(legend.position = "right")
+
+ggplotly(state_plot)
+
+
+```
+
+Suicide by sex
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### By sex
+```{r, message=FALSE}
+total_sex_plot = suicide_df %>% 
+  group_by(sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = sex, y = suicide_100k, fill = sex )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 24, 4)) +
+  labs(
+    title = "National Suicide Rate, by Sex", 
+    x = "Sex", 
+    y = "Suicides per 100k")
+
+ggplotly(total_sex_plot)
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### By sex over years
+```{r}
+year_sex_plot = suicide_df %>% 
+  group_by(year, sex) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k, color = sex)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 30, 5)) +
+  labs(
+    title = "Suicide Trend Over Years, by Sex",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(year_sex_plot)
+```
+
+Suicide by age
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### By age
+```{r, message=FALSE}
+total_age_plot = suicide_df %>% 
+  group_by(age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = age, y = suicide_100k, fill = age )) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(breaks = seq(0, 20, 2)) +
+  labs(
+    title = "National Suicide Rate, by Age", 
+    x = "Age", 
+    y = "Suicides per 100k")
+
+ggplotly(total_age_plot)
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### By age over years
+```{r}
+year_age_plot = suicide_df %>% 
+  group_by(year, age) %>% 
+  summarize(
+    population = sum(population),
+    suicide = sum(suicide_no),
+    suicide_100k = (suicide / population) * 100000
+  ) %>% 
+  ggplot(aes(x = year, y = suicide_100k,  color = age)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 24, 2)) +
+  labs(
+    title = "Suicide Trend Over Years, by Age",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(year_age_plot)
+```
+
+Suicide by means
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### Female suicide by means
+```{r, message=FALSE}
+female_means_plot = suicide_means_df %>% 
+  filter(sex == "female") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 2.5, 0.5)) +
+  labs(
+    title = "Female Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(female_means_plot)
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+### Male suicide by means
+```{r}
+male_means_plot = suicide_means_df %>% 
+  filter(sex == "male") %>% 
+  ggplot(aes(x = year, y = rate,  color = means)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  scale_y_continuous(breaks = seq(0, 16, 2)) +
+  labs(
+    title = "Male Suicide Rates, by Means of Suicide, 2000-2020",
+    x = "Year",
+    y = "Suicides per 100k"
+  )
+
+ggplotly(male_means_plot)
+```
