@@ -1560,3 +1560,69 @@ depre_adjusted_model %>%
 After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.34 > α=0.05.
 Hence, we found no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.12, 95% CI: 0.89, 1.43). In addition, the findings in the statistical analysis matches what we get in the depression trend section of our exploratory analysis.
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness. 
+
+
+
+
+### Suicide
+
+Based on the visualization of suicide analysis, the US national suicide rates have changed a lot through time. And the differences in suicide rates by sex, age can be observed. We will detect the group difference by year, sex, and age by doing regression analysis. Since the suicide trend for males by various age groups is different from the suicide trend for females by various age groups, there might a interaction happening between sex and age. So, interaction term between sex and age group will be considered in the regression analysis. 
+
+The model we have:
+<div align="center">$Suicide~per~100k  = \beta_0 + \beta_1 (Year_{i}) + \beta_2 (Sex_{i})+ \beta_3 (Age_{i}) + \beta_4 (Sex_{i}*Age_{i})$</div>\
+
+
+```{r}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+```
+
+
+#### Diagnostics
+
+
+```{r}
+sui_reg = lm (suicide_100k ~ year + sex + age + sex*age, data = suicide_df)
+```
+
+After we build our linear model, we will check the several assumptions by using to produce some diagnostic plots visualizing the residual errors.
+
+* Linearity of data: Ideally, the residual plot would not display any fitting patterns. Consequently, the red line should be roughly horizontal at zero. Based on our plot in the top-left chart, the residual plot lacks a pattern. This shows that a linear relationship between predictors and outcome variables can be assumed.
+* Homogeneity of variance: It can be seen that the variability (variances) of the residual points is roughly same with the value of the fitted outcome variable, suggesting overall constant variances in the residuals errors (or heteroscedasticity).
+* Normality of residuals:The normality assumption may be visually verified using the QQ plot of residuals. The residuals' normal probability plot should roughly resemble a straight line. We may infer normalcy since in our plot in the top-right chart, outside of three outliers, most of the points roughly lie along this reference line.
+* Outliers and high levarage points: 
+
+
+```{r}
+library(ggfortify)
+par(mfrow = c(2, 2))
+plot(sui_reg) 
+```
+
+
+#### Results
+
+```{r}
+sui_reg %>% 
+  summary() %>%
+   broom::tidy() %>% 
+  kbl(
+      caption     = "Effect of Selected Predictors on the US National Suicide Rate, 2000-2020"
+    , col.names   = c("Predictor", "Estimate", "SE", "t-statistic", "p-value"),
+     digits= 6) %>%
+  # further map to a more professional-looking table
+  kable_paper("striped", full_width = F) %>%
+  # make variable names bold
+  column_spec(1, bold = T)
+```
+
+
