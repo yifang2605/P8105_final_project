@@ -107,7 +107,6 @@ mental_df =
   ) %>% 
   mutate(
     state_abb = replace(state_abb, state == "District of Columbia", "DC"))
-
 ```
 
 ### Anxiety and depression data
@@ -132,7 +131,6 @@ Core demographic and Social economic status indicators listed below are also inc
 - `POVERTY`:Ratio of family income to poverty threshold
 
 Responses indicate Unknown or not applied are excluded from our analysis.
-
 ```{r, message=FALSE}
 anx_dep = 
   read_csv("data/nhis_data01.csv") %>% 
@@ -309,6 +307,7 @@ ser_mental_plot =
 grid.arrange(any_mental_plot, ser_mental_plot, ncol =2) 
   
 ```
+
 
 #### Any/Serious Mental illness percent, Top 10 states, 2019-2020
 
@@ -850,6 +849,7 @@ anx_dep %>%
 - From 2019 to 2020, there is no major change in the trend of depression. 
 - Other factors such as biological sex and household income seem to have an greater impact on depression.
 
+
 ### Suicide
 
 #### National trend of suicide rate, 2000-2020, (per 100K, per year)
@@ -905,6 +905,7 @@ suicide_state_df %>%
 
 ```
 
+
 #### Suicide rate for each state over years, 2014-2020
 
 Between 2014 and 2020, the state with the largest change in suicide rate is Wyoming, from 20.6 to 30.5; the state with the smallest change in suicide rate is New York, from 7.8 to 8.3.
@@ -921,6 +922,7 @@ suicide_state_df %>%
   theme(legend.position = "right")
 
 ```
+
 
 #### Suicide rate by sex
 
@@ -963,6 +965,7 @@ year_sex_plot = suicide_df %>%
 grid.arrange(total_sex_plot, year_sex_plot, ncol = 2 )
 ```
 
+
 #### Suicide rate by age
 
 Nationally, aged 45-64 had the highest suicide rate, second highest group is aged 75+. The 10-14 aged group has the lowest suicide rate. From year 2000 to 2020, the suicide rate of group aged 10-14 remains roughly static and small. Suicide rates in all other age groups show an overall upward trend. Among them, the group aged 25-44 has the largest change, roughly from 10 to 18 suicide rate per 100k. The suicide rates of those aged 45-64 and aged 65-74 start to drop since 2018.
@@ -1004,6 +1007,7 @@ year_age_plot = suicide_df %>%
 grid.arrange(total_age_plot, year_age_plot, ncol = 2 )
 ```
 
+
 ##### Suicide rate for females, by age group, 2000-2020
 
 Recently (from 2018 to 2020), suicide rates decrease in females aged 25-44, 45-64, 65-74 and 75+, but increase for those aged 15-24 and keep constant for those aged 10-14. Suicide rates are highest for those females aged 45-64 over the period of 2000-2020. The suicide rates increase from 6.2 in 2000 to the highest 10.2 in 2015, and then decline to 7.9 in 2020. Suicide rates are consistently lowest for those females aged 10-14 over the period of 2000-2020. The suicide rates increase from 0.6 in 2000 to the highest 2.0 in 2018, and then keep constant through 2020.But the rate more than triples from 0.6 (2000) to 2.0 (2020). The suicide rates of those aged 75+ are relatively stable between 2000 and 2020.
@@ -1029,6 +1033,7 @@ female_plot = suicide_df %>%
 
 ggplotly(female_plot)
 ```
+
 
 #### Suicide rate for males, by age group, 2000-2020
 
@@ -1056,6 +1061,7 @@ male_plot =  suicide_df %>%
 ggplotly(male_plot)
 
 ```
+
 
 #### Suicide rate for females, by means of suicide, 2000-2020
 
@@ -1098,6 +1104,7 @@ male_means_plot = suicide_means_df %>%
 ggplotly(male_means_plot)
 
 ```
+
 
 #### Conclusion
 
