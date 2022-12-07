@@ -77,7 +77,7 @@ suicide_df =
 ```
 
 
-#### Diagnostics
+## Diagnostics
 
 
 ```{r}
@@ -98,7 +98,7 @@ plot(sui_reg)
 ```
 
 
-#### Results
+## Results
 
 ```{r}
 sui_reg %>% 
