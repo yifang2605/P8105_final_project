@@ -1382,7 +1382,7 @@ anxiety_adjusted_model %>%
   column_spec(1, bold = T)
 ```
 After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.10 > α=0.05.
-Hence, we found no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51). In addition, the findings in the statistical analysis matches what we get in the anxiety trend section of our exploratory analysis.
+Hence, we find no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51). In addition, the findings in the statistical analysis matches what we get in the anxiety trend section of our exploratory analysis.
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness.
 
 
@@ -1567,7 +1567,7 @@ depre_adjusted_model %>%
   column_spec(1, bold = T)
 ```
 After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.31 > α=0.05.
-Hence, we found no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.13, 95% CI: 0.89, 1.45). In addition, the findings in the statistical analysis matches what we get in the depression trend section of our exploratory analysis.
+Hence, we find no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.13, 95% CI: 0.89, 1.45). In addition, the findings in the statistical analysis matches what we get in the depression trend section of our exploratory analysis.
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness. 
 
 
@@ -1663,9 +1663,11 @@ The estimate for predictor `Sexmale` is 1.10, which means that when sex changes 
 
 Mental illnesses are common in the United States with a high level. Depression and anxiety are two of the most prevalent mental illnesses. In recent years, anxiety and depression have not shown apparently trends and their associations with COVID-19 are not significant. Biological sex and household income appear to have larger effect on anxiety and depression. The study of mental illnesses are very important because they can increase risk of suicide. Suicide rates in the United States are generally high, increasing year by year before 2018, but has declined in recent years. Suicide rates vary by group, with male generally higher than females, elder people higher than younger people. Recently, firearm has become the leading means of suicide. 
 
-In our logistic regression modeling,we found no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51),since p-value is larger than 0.05. Besides,we also found no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.13, 95% CI: 0.89, 1.45), due to p-value is larger than 0.05. Hence, these two prevalent mental illnesses, anxiety and depression, are not significantly with COVID-19 exposure. 
+In our logistic regression modeling, we find no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51),since p-value is larger than 0.05. Besides,we also find no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.13, 95% CI: 0.89, 1.45), due to p-value larger than 0.05. Hence, these two prevalent mental illnesses, anxiety and depression, are not significantly associated with COVID-19 exposure. 
 
-In our linear regression modeling,it show that each predictor (Year, Sex, and Age) and the interaction term (Sex*Age) have a statistically significant link with the suicide rates since all of the p-values are relatively near to 0.And the analyses indicates that in general, suicide rate in the United States gradually increases as the year progresses, and there indeed are group difference in the suicide rate by sex and age. 
+In our linear regression modeling, it show that each predictor (Year, Sex, and Age) and the interaction term (Sex*Age) have a statistically significant link with the suicide rates since all of the p-values are relatively near to 0. And the analyses indicates that in general, suicide rate in the United States gradually increases as the year progresses, and there indeed are group difference in the suicide rate by sex and age. 
+
+
 
 ### Next steps
 Because our existing dataset of suicides does not have information on data related to COVID-19, further exploration of whether COVID-19 exposure affects suicide rates in the United States could follow, if new data information is available.
