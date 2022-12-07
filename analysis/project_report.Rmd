@@ -1670,4 +1670,4 @@ In our linear regression modeling, it show that each predictor (Year, Sex, and A
 
 
 ### Next steps
-Because our existing dataset of suicides does not have information on data related to COVID-19, further exploration of whether COVID-19 exposure affects suicide rates in the United States could follow, if new data information is available.
+Because our existing dataset of suicides does not have information on data related to COVID-19, further exploration of whether COVID-19 exposure affects suicide rates in the United States could follow, if new data information is available. 
