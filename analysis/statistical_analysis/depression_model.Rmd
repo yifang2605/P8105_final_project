@@ -132,7 +132,7 @@ mosi_regression_df =
 
 Whether taken medication for depression is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
 
-#### Mosaic Plot
+## Mosaic Plot
 The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for depression) in the population. 
 
 Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for depression when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for depression in the population.
@@ -244,7 +244,7 @@ subplot(
 
 
 
-#### Diagnostics
+## Diagnostics
 We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. 
 
 * The crude model only has the outcome (Whether taking medication for depression = Yes/No) and the predictor of interest (COVID-19 Status). 
@@ -286,7 +286,7 @@ modelr::add_predictions(regression_df,depre_adjusted_model )
 
 ```
 
-#### Results
+## Results
 
 Since four of these main effects were categorical variables, so we need to create dummy variables that indicate which levels of the predictors a given individual belonged. The outcome for this logistic regression is binary (Whether taking medication for depression = Yes/No). 
 
