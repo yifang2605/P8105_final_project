@@ -1104,9 +1104,8 @@ ggplotly(male_means_plot)
 - The US national suicide rates increase from 2000 to 2018, then decline from 2018 to 2020.
 - The suicide rates are high in the US overall, with variations between states and over years. Wyoming has the highest suicide rate and New Jersey has the lowest suicide rate from 2014-2020.
 - For both females and males, suicide rates are lower in 2020 than in 2018 and 2019. Overall, the suicide rate for males is much higher than that of females. 
-- Overall, suicide rates increase with age (except age group 65-74). Suicide rates in all age 
-
-
+- Overall, suicide rates increase with age (except age group 65-74). Suicide rates in all age groups shown an upward trend.
+- The leading means of suicide for females in 2020 is firearm-related, before 2017, poisoning-related is the leading means. The leading means of suicide for males is firearm-related over 20 years. 
 
 
 ## Regression
