@@ -1,0 +1,140 @@
+---
+title: "Regression for Suicide"
+output: 
+  html_document:
+    theme: journal
+    code_folding: hide
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(mgcv)
+library(modelr)
+library(ggmosaic)
+
+library(lmtest)
+library(performance)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+library(ggfortify)
+
+library(usmap)
+library(gridExtra)
+library(dplyr)
+library(readxl)
+
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 12, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+
+
+Based on the visualization of suicide analysis, the US national suicide rates have changed a lot through time. And the differences in suicide rates by sex, age can be observed. We will detect the group difference by year, sex, and age by doing regression analysis. Since the suicide trend for males by various age groups is different from the suicide trend for females by various age groups, there might a interaction happening between sex and age. So, interaction term between sex and age group will be considered in the regression analysis. 
+
+The model we have:
+<div align="center">$Suicide~per~100k  = \beta_0 + \beta_1 (Year_{i}) + \beta_2 (Sex_{i})+ \beta_3 (Age_{i}) + \beta_4 (Sex_{i}*Age_{i})$</div>\
+
+
+```{r}
+suicide_df = 
+  read_excel(
+    "./data/suicide_data.xlsx",
+    sheet = 1,
+    col_names = TRUE) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+    population = (suicide_no / suicide_100k) * 100000, 
+    sex = as.factor(sex),
+    age = as.factor(age)
+  )
+```
+
+
+#### Diagnostics
+
+
+```{r}
+sui_reg = lm (suicide_100k ~ year + sex + age + sex*age, data = suicide_df)
+```
+
+After we build our linear model, we will check the several assumptions by using to produce some diagnostic plots visualizing the residual errors.
+
+* Linearity of data: Ideally, the residual plot would not display any fitting patterns. Consequently, the red line should be roughly horizontal at zero. Based on our plot in the top-left chart, the residual plot lacks a pattern. This shows that a linear relationship between predictors and outcome variables can be assumed.
+* Homogeneity of variance:In the plot on the bottom-left, it can be seen that the variability (variances) of the residual points is roughly same with the value of the fitted outcome variable, suggesting constant variances in the residuals errors (or heteroscedasticity) in overall.
+* Normality of residuals:The normality assumption may be visually verified using the QQ plot of residuals. The residuals' normal probability plot should roughly resemble a straight line. We may infer normalcy since in our plot in the top-right chart, outside of three outliers, most of the points roughly lie along this reference line.
+* Outliers and high levarage points: The plot on the bottom-right highlights the top 3 potential outliers (#10, #12 and #36).And none of them exceed the contour of cook’s distance to be considered as influential observations. 
+
+
+```{r}
+par(mfrow = c(2, 2))
+plot(sui_reg) 
+```
+
+
+#### Results
+
+```{r}
+sui_reg %>% 
+  summary() %>%
+   broom::glance() %>% kbl(
+    caption     = "Key Statistics for Model Performance"
+    , col.names = c(
+        "R-squared", "Adj. R-squared"
+      , "Sigma", "F-statistic", "p-value", "df", "Residual df", "N")
+      , digits    = c( 2, 2, 0, 2, 5, 0, 0, 0)
+    ) %>%
+  kable_paper("striped", full_width = F) %>%
+  column_spec(1, bold = T)
+```
+
+As F-statistic is 1994.27, df=12, and the p-value is much less than 0.05, so we reject the null hypothesis at the significance level of 0.05. Hence there is a significant relationship between the outcome `suicide rate` and the variables (`Year`, `Sex`, `Age`, and the interaction term `Sex*Age`)in the linear regression model of the suicide dataset.
+
+
+```{r}
+sui_reg %>% 
+  summary() %>%
+   broom::tidy() %>% 
+  kbl(
+      caption     = "Effect of Selected Predictors on the US National Suicide Rate, 2000-2020"
+    , col.names   = c("Predictor", "Estimate", "SE", "t-statistic", "p-value"),
+     digits= 6) %>%
+  # further map to a more professional-looking table
+  kable_paper("striped", full_width = F) %>%
+  # make variable names bold
+  column_spec(1, bold = T)
+```
+
+According to the table, all the p-values are quite close to 0, so our regression indicates that each predictor(`Year`, `Sex`, `Age`) and the interaction term (`Sex*Age`) have the statistically significant relationship with the suicide rates.
+
+The estimate for predictor `Year` is 0.17, which means that when one year increases, the suicide rate will also increase 0.17, assuming all other variables stay constant. This finding is not totally consistent with the summary described in our previous visualization process, probably because the suicide rate trend ripple is not enough obvious or the variable `Year` is affected by other unknown variables. 
+
+The estimate for predictor `Sexmale` is 1.10, which means that when sex changes from male to female, the value of the suicide rate will increase 1.10, assuming all other variables stay constant. Among all the females, the predictor `Age45-64` has the largest value of the estimate, showing that the age group 45-64 has the higher suicide rates than all other age groups. Among all the males, we need to combine the estimates with age groups and the interaction terms, and obtain that the age group 75+ has the higher suicide rates than all other age groups. And these findings match with our summary from the foregoing descriptive analyses.
+
+

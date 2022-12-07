@@ -1,0 +1,314 @@
+---
+title: "Regression for Anxiety"
+output: 
+  html_document:
+    theme: journal
+    code_folding: hide
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+library(plotly)
+library(mgcv)
+library(modelr)
+library(ggmosaic)
+
+library(lmtest)
+library(performance)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+library(ggfortify)
+
+library(usmap)
+library(gridExtra)
+library(dplyr)
+library(readxl)
+
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 12, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(
+  theme_minimal() + 
+    theme(
+      legend.position = "bottom",
+      plot.title = element_text(hjust = 0.5)
+    )  
+)
+```
+
+```{r, message=FALSE}
+regression_df = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year == 2020) %>% 
+  select(worrx, deprx, age, sex, poverty, marst, cvddiag) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "_Male", 
+                        "2" = "_Female"),
+    marital_status = recode_factor(marst, 
+                        "10" = "_Married", "11" = "_Married","12" = "_Married","13" = "_Married",
+                        "20" = "_Widowed","30" = "_Divorced","40" = "_Separated",
+                        "50" = "_Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "_Less than 1.0", "12" = "_Less than 1.0", 
+                        "13" = "_Less than 1.0", "14" = "_Less than 1.0",
+                        "21" = "_1.0-2.0", "22" = "_1.0-2.0", 
+                        "23" = "_1.0-2.0", "24" = "_1.0-2.0", 
+                        "25" = "_1.0-2.0",
+                        "31" = "_2.0 and above","32" = "_2.0 and above",
+                        "33" = "_2.0 and above","34" = "_2.0 and above",
+                        "35" = "_2.0 and above","36" = "_2.0 and above",
+                        "37" = "_2.0 and above","38" = "_2.0 and above"),
+    age = ifelse(age>=85, NA, age),
+    worrx = ifelse(worrx>=3, NA, worrx),
+    deprx = ifelse(deprx>=3, NA, deprx),
+    worrx = recode_factor(worrx,
+                          '1' = 0, 
+                          '2' = 1),
+    deprx = recode_factor(deprx, '1' = 0, '2' = 1),
+    cvddiag = recode_factor(cvddiag, 
+                            "1" = "_Never had COVID-19", 
+                          "2" = "_Had COVID-19")
+    ) %>%
+  drop_na(age, worrx, deprx, sex, poverty, marital_status, cvddiag)
+```
+
+
+Whether taken medication for worried, nervous, or anxious feelings is associated with COVID-19 adjusting for age, sex, family income level and current marital status. 
+
+
+```{r, message=FALSE}
+mosi_regression_df = 
+  read_csv("data/nhis_data01.csv") %>% 
+  janitor::clean_names() %>% 
+  filter(year == 2020) %>% 
+  select(worrx, deprx, age, sex, poverty, marst, cvddiag) %>% 
+  mutate(
+    sex = recode_factor(sex, 
+                        "1" = "Male", 
+                        "2" = "Female"),
+    marital_status = recode_factor(marst, 
+                        "10" = "Married", "11" = "Married","12" = "Married","13" = "Married",
+                        "20" = "Widowed","30" = "Divorced","40" = "Separated",
+                        "50" = "Never married"),
+    poverty = recode_factor(poverty, 
+                        "11" = "Less than 1.0", "12" = "Less than 1.0", 
+                        "13" = "Less than 1.0", "14" = "Less than 1.0",
+                        "21" = "1.0-2.0", "22" = "1.0-2.0", 
+                        "23" = "1.0-2.0", "24" = "1.0-2.0", 
+                        "25" = "1.0-2.0",
+                        "31" = "2.0 and above","32" = "2.0 and above",
+                        "33" = "2.0 and above","34" = "2.0 and above",
+                        "35" = "2.0 and above","36" = "2.0 and above",
+                        "37" = "2.0 and above","38" = "2.0 and above"),
+    age = ifelse(age>=85, NA, age),
+    worrx = ifelse(worrx>=3, NA, worrx),
+    deprx = ifelse(deprx>=3, NA, deprx),
+    worrx = recode_factor(worrx,
+                          '1' = 'No', 
+                          '2' = 'Yes'),
+    deprx = recode_factor(deprx, '1' = 'No', '2' = 'Yes'),
+    cvddiag = recode_factor(cvddiag, 
+                            "1" = "Never had COVID-19", 
+                          "2" = "Had COVID-19")
+    ) %>%
+  drop_na(age, worrx, deprx, sex, poverty, marital_status, cvddiag)
+```
+
+## Mosaic Plot
+The Mosaic Plot included four categorical variables and it was used to visualize the proportional relationship between these variables and the outcome (whether or not taken medication for worried, nervous, or anxious feelings) in the population. 
+
+Based on the plot, we can observe that compared to the other three variables (sex, family income level, and current marital status), there was no obvious difference in the proportion of people who took medication for anxiety when comparing those who had COVID-19 with those who never had COVID-19. That is, having had COVID-19 or not had no significant effect on whether or not taking medication for anxiety in the population.
+
+
+In truth, when comparing male with female, we can observe the largest difference in the proportion of people who took medication for anxiety. It means that among those four variables, the variable sex has the largest difference in the proportion of people who took medication for anxiety.
+
+```{r, message=FALSE}
+sex_worrx = 
+  mosi_regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, sex),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+   y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+poverty_worrx = 
+  mosi_regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, poverty),
+      fill = worrx
+    ),
+    offset = 0.01
+  )+ 
+  labs(
+    x="", 
+    y="",
+    fill = "Whether taken medicine for anxiety")+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  ) 
+
+marital_status_worrx = 
+  mosi_regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, marital_status),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+    y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1)
+  )
+
+cvddiag_worrx = 
+  mosi_regression_df %>%
+  ggplot() + 
+  geom_mosaic(
+    aes(
+      x = product(worrx, cvddiag),
+      fill = worrx
+    ),
+    offset = 0.01,
+    show.legend = FALSE
+  )+ 
+  labs(
+    x="", 
+  y=""
+  )+
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y=element_blank(),
+    axis.text.x = element_text(angle = 90, hjust = 1),
+  )
+  
+sex_worrx = ggplotly(sex_worrx)
+
+poverty_worrx = 
+  ggplotly(poverty_worrx) %>%
+  layout(legend = list(orientation = "h"))
+
+marital_status_worrx = ggplotly(marital_status_worrx)
+
+cvddiag_worrx = ggplotly(cvddiag_worrx)
+  
+subplot(
+  style(sex_worrx, showlegend = F), 
+  style(cvddiag_worrx, showlegend = F), 
+  style(marital_status_worrx, showlegend = F), 
+  poverty_worrx, nrows=1) %>% 
+  layout(legend = list(x = 0, y = -0.4))
+```
+
+## Diagnostics
+We seek to validate our models and assess its goodness of fit. In our motivating example, we have two models: (1) Crude model and (2) Adjusted model. 
+
+* The crude model only has the outcome ( Whether taking medication for worried, nervous, or anxious feelings = Yes/No) and the predictor of interest (COVID-19 Status). 
+* The adjusted model has the outcome and predictor of interest (COVID-19 Status) along with other with four covariates (Sex, Age, Poverty(family income level),and Current Marital Status). 
+
+We can assess which of these two models fit the data better using the likelihood ratio test.  
+
+```{r, message=FALSE}
+anxiety_crude_model = 
+  glm(worrx ~ cvddiag, family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, message=FALSE}
+anxiety_adjusted_model = 
+  glm(worrx ~ sex + poverty + age + marital_status + cvddiag, 
+                            family=binomial(link='logit'),
+                            data = regression_df)
+```
+
+```{r, include=FALSE, message=FALSE}
+summary(anxiety_adjusted_model)
+```
+
+
+```{r}
+lrtest(anxiety_crude_model, anxiety_adjusted_model) %>% 
+kbl(caption     = "Likelihood ratio test for crude model and adjusted model", col.names   = c("Total df for each model", "LogLik", "difference in df", "Chisq-statistic", "p-value")) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+* Goodness of Fit
+* Likelihood ratio test
+The resulting p-value is so small it’s very close to 0, so we can reject the null hypothesis. The p<0.00001 suggesting that the adjusted model with five covariates (Sex, Age, Poverty(family income level), Current Marital Status and COVID-19 Status) fits the data significantly better than the crude model.
+
+
+```{r, include=FALSE, message=FALSE}
+modelr::add_predictions(regression_df,anxiety_adjusted_model ) 
+```
+
+
+
+## Results
+
+Since four of these main effects were categorical variables, so we need to create dummy variables that indicate which levels of the predictors a given individual belonged. The outcome for this logistic regression is binary (Whether taking medication for worried, nervous, or anxious feelings = Yes/No). 
+
+* The variable `Sex` has one dummy variable and `Sex_Male` is the reference group.
+* The variable `poverty` has two dummy variables and `poverty_less than 1.0` is the reference group.
+* The variable `marital_status` has four dummy variables and `marital_status_Married` is the reference group.
+* The variable `cvddiag(COVID-19 status)`has one dummy variable and `cvddiag_Had COVID-19` is the reference group. 
+
+```{r}
+anxiety_adjusted_model %>%  
+   broom::tidy() %>% 
+  mutate(OR = exp(estimate),
+         Lower_CI = exp(estimate -1.96*std.error),
+         Upper_CI = exp(estimate +1.96*std.error)) %>%
+  select(term, OR, Lower_CI, Upper_CI, statistic, p.value) %>% 
+  kbl(caption     = "Effect of Selected Predictors on whether taking medication for worried, nervous, or anxious feelings"
+    , col.names   = c("Predictors", "OR", "Lower bound of 95% CI","Upper bound of 95% CI", "t-statistic", "p-value"),
+    digits= 2) %>% 
+  kable_paper("striped", full_width = F) %>% 
+  column_spec(1, bold = T)
+```
+After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.10 > α=0.05.
+Hence, we find no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51). In addition, the findings in the statistical analysis matches what we get in the anxiety trend section of our exploratory analysis.
+Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness.
