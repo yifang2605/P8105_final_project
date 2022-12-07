@@ -59,6 +59,12 @@ theme_set(
 
 Mental health is an important part of overall health and well-being. Mental health includes our emotional, psychological, and social well-being. Mental health problems exist frequently throughout the United States. About one in five adults suffer from a diagnosable mental illness in a given year. Many common mental illnesses, such as depression, anxiety, bipolar disorder, may increase risk of suicide. 
 
+## Related Work
+
+**The Big Event for Mental Health:** A WHO initiative on Global Awareness and Investment in World Mental Health
+
+Annually on October 10, World Mental Health Day is celebrated around the world to advance advocacy and awareness about mental illnesses and acknowledge its effects on daily life. With these goals in mind, the first-ever event on this day, sponsored by the World Health Organization (WHO), was celebrated this year.  The event highlighted advances and preventive measures in mental health care worldwide. The event also promoted mental health advocacy in collaboration among governmental, non-governmental, public agency partners, and individuals worldwide.
+
 ## Questions and Planned Analyses
 
 1.	What is the general status of mental illness across states in the US?
