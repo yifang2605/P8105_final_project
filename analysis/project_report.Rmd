@@ -1659,9 +1659,9 @@ The estimate for predictor `Sexmale` is 1.10, which means that when sex changes 
 
 
 
-### Conclusion
+## Conclusion
 
-Mental illnesses are common in the United States with a high level. Depression and anxiety are two of the most prevalent mental illnesses. In recent years, anxiety and depression have not shown apparently trends and their associations with COVID-19 are not significant. Biological sex and household income appear to have larger effect on anxiety and depression. The study of mental illnesses are very important because they can increase risk of suicide. Suicide rates in the United States are generally high, increasing year by year before 2018, but has declined in recent years. Suicide rates vary by group, with male generally higher than females, elder people higher than younger people. Recently, firearm has become the leading means of suicide. 
+Mental illnesses are common in the United States with a high level. Depression and anxiety are two of the most prevalent mental illnesses. In recent years, anxiety and depression trends have not shown apparent change and their associations with COVID-19 are not significant. Meanwhile, other factors like biological sex and household income appear to have larger effect on anxiety and depression. The study of mental illnesses are very important because they can increase risk of suicide. Suicide rates in the United States are generally high, increasing year by year before 2018, but has declined in recent years. Suicide rates vary by group, with male generally higher than females, elder people higher than younger people. Recently, firearm has become the leading means of suicide.  
 
 In our logistic regression modeling, we find no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.51),since p-value is larger than 0.05. Besides,we also find no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.13, 95% CI: 0.89, 1.45), due to p-value larger than 0.05. Hence, these two prevalent mental illnesses, anxiety and depression, are not significantly associated with COVID-19 exposure. 
 
@@ -1669,5 +1669,8 @@ In our linear regression modeling, it show that each predictor (Year, Sex, and A
 
 
 
-### Next steps
+## Next steps
+
+Although there is no significant association between ever having COVID-19 and anxiety and depression in our analysis of the overall U.S. population, it is still possible that the extensive impact of COVID-19 on economic and political environment exacerbates people' anxiety and depression. In addition, the effects of COVID-19 on anxiety and depression in certain subgroups are also worth exploring. Further analyses can focus on subgroups or the extensive effects of COVID-19. 
+
 Because our existing dataset of suicides does not have information on data related to COVID-19, further exploration of whether COVID-19 exposure affects suicide rates in the United States could follow, if new data information is available. 
