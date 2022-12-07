@@ -1143,6 +1143,7 @@ regression_df =
                         "33" = "_2.0 and above","34" = "_2.0 and above",
                         "35" = "_2.0 and above","36" = "_2.0 and above",
                         "37" = "_2.0 and above","38" = "_2.0 and above"),
+    age = ifelse(age>=85, NA, age),
     worrx = ifelse(worrx>=3, NA, worrx),
     deprx = ifelse(deprx>=3, NA, deprx),
     worrx = recode_factor(worrx,
@@ -1153,7 +1154,7 @@ regression_df =
                             "1" = "_Never had COVID-19", 
                           "2" = "_Had COVID-19")
     ) %>%
-  drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
+  drop_na(age, worrx, deprx, sex, poverty, marital_status, cvddiag)
 ```
 
 ### Worries and anxiety
@@ -1185,6 +1186,7 @@ mosi_regression_df =
                         "33" = "2.0 and above","34" = "2.0 and above",
                         "35" = "2.0 and above","36" = "2.0 and above",
                         "37" = "2.0 and above","38" = "2.0 and above"),
+    age = ifelse(age>=85, NA, age),
     worrx = ifelse(worrx>=3, NA, worrx),
     deprx = ifelse(deprx>=3, NA, deprx),
     worrx = recode_factor(worrx,
@@ -1195,7 +1197,7 @@ mosi_regression_df =
                             "1" = "Never had COVID-19", 
                           "2" = "Had COVID-19")
     ) %>%
-  drop_na(worrx, deprx, sex, poverty, marital_status, cvddiag)
+  drop_na(age, worrx, deprx, sex, poverty, marital_status, cvddiag)
 ```
 
 #### Mosaic Plot
@@ -1373,7 +1375,7 @@ anxiety_adjusted_model %>%
   kable_paper("striped", full_width = F) %>% 
   column_spec(1, bold = T)
 ```
-After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.11 > α=0.05.
+After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.10 > α=0.05.
 Hence, we found no statistically significant association between COVID-19 status and taking medication for worried, nervous, or anxious feelings (aOR: 1.20, 95% CI: 0.96, 1.50). In addition, the findings in the statistical analysis matches what we get in the anxiety trend section of our exploratory analysis.
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness.
 
@@ -1558,7 +1560,7 @@ depre_adjusted_model %>%
   kable_paper("striped", full_width = F) %>% 
   column_spec(1, bold = T)
 ```
-After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.34 > α=0.05.
+After adjustment for sex, age, poverty(family income level), and Current Marital Status, we obtained the `p-value` for the variable `cvddiage(COVID-19 status)`is 0.31 > α=0.05.
 Hence, we found no statistically significant association between COVID-19 status and taking medication for depression (aOR: 1.12, 95% CI: 0.89, 1.43). In addition, the findings in the statistical analysis matches what we get in the depression trend section of our exploratory analysis.
 Due to the Table 2 fallacy, we should avoid interpreting covariates other than the exposure of interest, but they are included here for completeness. 
 
@@ -1645,7 +1647,7 @@ sui_reg %>%
 
 According to the table, all the p-values are quite close to 0, so our regression indicates that each predictor(`Year`, `Sex`, `Age`) and the interaction term (`Sex*Age`) have the statistically significant relationship with the suicide rates.
 
-The estimate for predictor `Year` is 0.17, which means that When one year increases, the suicide rate will also increase 0.17, assuming all other variables stay constant. This finding is not totally consistent with the summary described in our previous visualization process, probably because the suicide rate trend ripple is not enough obvious or the variable `Year` is affected by other unknown variables. 
+The estimate for predictor `Year` is 0.17, which means that when one year increases, the suicide rate will also increase 0.17, assuming all other variables stay constant. This finding is not totally consistent with the summary described in our previous visualization process, probably because the suicide rate trend ripple is not enough obvious or the variable `Year` is affected by other unknown variables. 
 
-The estimate for predictor `Sexmale` is 1.10, which means that When sex changes from male to female, the value of the suicide rate will increase 1.10, assuming all other variables stay constant. Among all the females, the predictor `Age45-64` has the largest value of the estimate, showing that the age group 45-64 has the higher suicide rates than all other age groups. Among all the males, we need to combine the estimates with age groups and the interaction terms, and obtain that the age group 75+ has the higher suicide rates than all other age groups. And these findings match with our summary from the foregoing descriptive analyses.
+The estimate for predictor `Sexmale` is 1.10, which means that when sex changes from male to female, the value of the suicide rate will increase 1.10, assuming all other variables stay constant. Among all the females, the predictor `Age45-64` has the largest value of the estimate, showing that the age group 45-64 has the higher suicide rates than all other age groups. Among all the males, we need to combine the estimates with age groups and the interaction terms, and obtain that the age group 75+ has the higher suicide rates than all other age groups. And these findings match with our summary from the foregoing descriptive analyses.
 
