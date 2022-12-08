@@ -1,17 +1,17 @@
 # P8105 Final Project: Mental Health Post COVID-19 Pandemic
 
-This repository holds the code for our Data Science 1 (P8105) Fall 2022 Final Project. 
+- This repository holds the code for our Data Science 1 (P8105) Fall 2022 Final Project. 
 
-Check out our website: 
+- All .Rmd files in this repo must be Knit from the 'Project Directory'.
 
-## Group Members
+- Check out our [website](https://kellyluo233.github.io/mental_illness.github.io)
 
-Fei Xiao
+- [Website Repository](https://github.com/KellyLuo233/mental_illness.github.io)
 
-Kelly Luo 
+## Github link to Group Members
 
-Tongtong Zhu 
-
-Yi Fang  
-
-Yujie Huang
+- [Fei Xiao](https://github.com/xiaof2)
+- [Kelly Luo]()
+- [Tongtong Zhu]()
+- [Yi Fang]() 
+- [Yujie Huang]()
