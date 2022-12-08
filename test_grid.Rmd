@@ -1,0 +1,15 @@
+---
+title: "Test grid"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+## test grid
+
+| [![1](image/1.jpg){width=200, height=200}](analysis/project_report.html)| [![2](image/2.jpg){width=200, height=200}](analysis/project_report.html) |[![3](image/3.jpg){width=200, height=200}](analysis/project_report.html)|
+|:--:| :--:| :--:| 
+| [*1*](analysis/project_report.html) | [*2*](analysis/project_report.html) | [*3*](analysis/project_report.html) |
+| [![4](image/4.jpg){width=200, height=200}](analysis/project_report.html)| [![5](image/5.jpg){width=200, height=200}](analysis/project_report.html) |[![6](image/6.jpg){width=200, height=200}](analysis/project_report.html)|
+| [*4*](analysis/project_report.html) | [*5*](analysis/project_report.html) | [*6*](analysis/project_report.html) |
