@@ -11,7 +11,7 @@
 ## Github link to Group Members
 
 - [Fei Xiao](https://github.com/xiaof2)
-- [Kelly Luo]()
-- [Tongtong Zhu]()
-- [Yi Fang]() 
-- [Yujie Huang]()
+- [Kelly Luo](https://github.com/KellyLuo233)
+- [Tongtong Zhu](https://github.com/TongtongZhu12)
+- [Yi Fang](https://github.com/yifang2605) 
+- [Yujie Huang](https://github.com/yh3429)
