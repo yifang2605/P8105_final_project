@@ -6,6 +6,8 @@ output:
     vertical_layout: fill
     source: embed
     theme: journal
+    navbar:
+      - { title: "Home", href: analysis/project_report.html }
 ---
 
 ```{r setup, include=FALSE}
